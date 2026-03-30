@@ -32,4 +32,9 @@ public class CryptoPayment extends AbstractPaymentMethod implements Payment {
         return id == other.getId() &&
                 Objects.equals(accountId, other.getAccountId());
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

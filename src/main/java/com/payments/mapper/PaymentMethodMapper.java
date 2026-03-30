@@ -21,7 +21,7 @@ public class PaymentMethodMapper {
         return new CryptoPaymentDTO(cryptoPayment.getId(), cryptoPayment.getType(), cryptoPayment.getAccountId());
     }
 
-    private PaypalPaymentDTO toDto(PaypalPayment paypalPayment) {
+    private PaypalPaymentDTO toDTO(PaypalPayment paypalPayment) {
         return new PaypalPaymentDTO(paypalPayment.getId(), paypalPayment.getType(), paypalPayment.getAccountId());
     }
 
@@ -29,7 +29,7 @@ public class PaymentMethodMapper {
         return switch (payment) {
             case CreditCardPayment creditCardPayment    -> toDTO(creditCardPayment);
             case CryptoPayment cryptoPayment    -> toDTO(cryptoPayment);
-            case PaypalPayment paypalPayment    -> toDto(paypalPayment);
+            case PaypalPayment paypalPayment    -> toDTO(paypalPayment);
             default -> throw new IllegalArgumentException("Unknown type : " + payment.getClass());
         };
     }

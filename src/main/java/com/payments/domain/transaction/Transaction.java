@@ -22,6 +22,7 @@ public class Transaction {
     private AbstractPaymentMethod payment;
 
     public Transaction() {
+        // Empty constructor for Spring boot
     }
 
     public long getId() {

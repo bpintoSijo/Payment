@@ -24,10 +24,10 @@ public abstract class AbstractPaymentMethod implements Payment {
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> transactions = new ArrayList<>();
 
-    public AbstractPaymentMethod() {
+    protected AbstractPaymentMethod() {
     }
 
-    public AbstractPaymentMethod(String accountId) {
+    protected AbstractPaymentMethod(String accountId) {
         this.accountId = accountId;
     }
 
@@ -83,11 +83,19 @@ public abstract class AbstractPaymentMethod implements Payment {
         }
 
         payMessageBuilder.append(amount).append(" using ").append(getType());
-        System.out.println(payMessageBuilder);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(this == obj) return true;
+        if(!(obj instanceof AbstractPaymentMethod other)) return false;
+
+        return id == other.getId() &&
+                Objects.equals(accountId, other.getAccountId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hash(id, accountId);
     }
 }
