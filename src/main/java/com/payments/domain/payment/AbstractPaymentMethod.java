@@ -31,9 +31,6 @@ public abstract class AbstractPaymentMethod implements Payment {
         this.accountId = accountId;
     }
 
-    // Abstract methods
-    public abstract String getType();
-
     // Default methods
     public long getId() {
         return id;

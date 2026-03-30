@@ -4,7 +4,6 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
@@ -20,13 +19,8 @@ public class CreditCardPayment extends AbstractPaymentMethod implements Payment 
     }
 
     @Override
-    public void pay(BigDecimal amount) {
-        super.pay(amount);
-    }
-
-    @Override
     public String getType() {
-        return "Credit Card";
+        return "CARD";
     }
 
     @Override

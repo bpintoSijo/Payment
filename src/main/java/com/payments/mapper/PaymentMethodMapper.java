@@ -10,7 +10,7 @@ import com.payments.dto.payment.PaymentMethodDTO;
 import com.payments.dto.payment.PaypalPaymentDTO;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component //TODO use strategy pattern instead of switch
 public class PaymentMethodMapper {
 
     private CreditCardPaymentDTO toDTO(CreditCardPayment creditCardPayment) {

@@ -1,6 +1,5 @@
 package com.payments.domain.payment;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -21,7 +20,7 @@ public class CryptoPayment extends AbstractPaymentMethod implements Payment {
 
     @Override
     public String getType() {
-        return "Crypto";
+        return "CRYPTO";
     }
 
     @Override

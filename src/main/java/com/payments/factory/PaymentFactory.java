@@ -5,4 +5,5 @@ import com.payments.dto.payment.PaymentMethodDTO;
 
 public interface PaymentFactory<T extends PaymentMethodDTO> {
     AbstractPaymentMethod create(T dto);
+    Class<T> getSupportedType();
 }
