@@ -67,7 +67,7 @@ public abstract class AbstractPaymentMethod implements Payment {
     }
 
     @Override
-    public void pay(BigDecimal amount) {
+    public String pay(BigDecimal amount) {
         if(amount == null) {
             throw new IllegalArgumentException("Can't pay with a null amount");
         }
@@ -80,6 +80,7 @@ public abstract class AbstractPaymentMethod implements Payment {
         }
 
         payMessageBuilder.append(amount).append(" using ").append(getType());
+        return payMessageBuilder.toString();
     }
 
     @Override

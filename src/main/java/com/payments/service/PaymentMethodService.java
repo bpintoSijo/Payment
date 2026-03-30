@@ -5,6 +5,7 @@ import com.payments.dto.payment.PaymentMethodDTO;
 import com.payments.repository.PaymentMethodRepository;
 import com.payments.strategy.payment.PaymentStrategyRegistry;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,12 +22,14 @@ public class PaymentMethodService {
         this.paymentStrategyRegistry = paymentStrategyRegistry;
     }
 
+    @Transactional
     public PaymentMethodDTO create(PaymentMethodDTO paymentMethodDTO) {
         AbstractPaymentMethod payment = paymentStrategyRegistry.create(paymentMethodDTO);
         paymentMethodRepository.save(payment);
         return paymentStrategyRegistry.toDTO(payment);
     }
 
+    @Transactional
     public List<PaymentMethodDTO> getAvailablePaymentMethod() {
         return paymentMethodRepository.findAll()
                 .stream()

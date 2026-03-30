@@ -1,4 +1,4 @@
-package com.payments.controller;
+package com.payments.controller.rest;
 
 
 import com.payments.dto.payment.PaymentMethodDTO;

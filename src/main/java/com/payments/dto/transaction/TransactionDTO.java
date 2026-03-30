@@ -1,8 +1,37 @@
 package com.payments.dto.transaction;
 
-import com.payments.dto.payment.PaymentMethodDTO;
-
 import java.math.BigDecimal;
 
-public record TransactionDTO(long id, BigDecimal amount, PaymentMethodDTO payment) {
+public class TransactionDTO {
+    private Long id;
+    private BigDecimal amount;
+    private Long paymentMethodId;
+
+    public TransactionDTO() {
+        // Empty to used with SpringBoot
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public Long getPaymentMethodId() {
+        return paymentMethodId;
+    }
+
+    public void setPaymentMethodId(long paymentMethodId) {
+        this.paymentMethodId = paymentMethodId;
+    }
 }
