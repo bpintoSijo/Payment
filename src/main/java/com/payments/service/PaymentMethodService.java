@@ -2,9 +2,8 @@ package com.payments.service;
 
 import com.payments.domain.payment.AbstractPaymentMethod;
 import com.payments.dto.payment.PaymentMethodDTO;
-import com.payments.factory.PaymentFactoryRegistry;
-import com.payments.mapper.PaymentMethodMapper;
 import com.payments.repository.PaymentMethodRepository;
+import com.payments.strategy.payment.PaymentStrategyRegistry;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,28 +12,25 @@ import java.util.List;
 public class PaymentMethodService {
 
     private final PaymentMethodRepository paymentMethodRepository;
-    private final PaymentMethodMapper paymentMethodMapper;
-    private final PaymentFactoryRegistry paymentMethodFactoryRegistry;
+    private final PaymentStrategyRegistry paymentStrategyRegistry;
 
     public PaymentMethodService(PaymentMethodRepository paymentMethodRepository,
-                                PaymentMethodMapper paymentMethodMapper,
-                                PaymentFactoryRegistry paymentMethodFactoryRegistry
+                                PaymentStrategyRegistry paymentStrategyRegistry
     ) {
         this.paymentMethodRepository = paymentMethodRepository;
-        this.paymentMethodMapper = paymentMethodMapper;
-        this.paymentMethodFactoryRegistry = paymentMethodFactoryRegistry;
+        this.paymentStrategyRegistry = paymentStrategyRegistry;
     }
 
     public PaymentMethodDTO create(PaymentMethodDTO paymentMethodDTO) {
-        AbstractPaymentMethod payment = paymentMethodFactoryRegistry.createFrom(paymentMethodDTO);
+        AbstractPaymentMethod payment = paymentStrategyRegistry.create(paymentMethodDTO);
         paymentMethodRepository.save(payment);
-        return paymentMethodDTO;
+        return paymentStrategyRegistry.toDTO(payment);
     }
 
     public List<PaymentMethodDTO> getAvailablePaymentMethod() {
         return paymentMethodRepository.findAll()
                 .stream()
-                .map(paymentMethodMapper::toDTO)
+                .map(paymentStrategyRegistry::toDTO)
                 .toList();
     }
 }
