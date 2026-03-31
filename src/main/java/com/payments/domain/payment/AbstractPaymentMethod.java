@@ -79,7 +79,8 @@ public abstract class AbstractPaymentMethod implements Payment {
             payMessageBuilder = new StringBuilder("Paid ");
         }
 
-        payMessageBuilder.append(amount).append(" using ").append(getType());
+        payMessageBuilder.append(amount).append(" using ").append(getType())
+                .append(" - ").append(accountId);
         return payMessageBuilder.toString();
     }
 

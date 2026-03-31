@@ -20,7 +20,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionDTO create(TransactionDTO form) {
+    public Transaction create(TransactionDTO form) {
         AbstractPaymentMethod paymentMethod = paymentMethodRepository.findById(form.getPaymentMethodId())
                 .orElseThrow(() -> new IllegalArgumentException("Payment method not found: " + form.getPaymentMethodId()));
 
@@ -28,11 +28,6 @@ public class TransactionService {
         transaction.setAmount(form.getAmount());
         transaction.setPayment(paymentMethod);
 
-        transactionRepository.save(transaction);
-        TransactionDTO transactionDTO = new TransactionDTO();
-        transactionDTO.setId(transaction.getId());
-        transactionDTO.setAmount(transaction.getAmount());
-        transactionDTO.setPaymentMethodId(paymentMethod.getId());
-        return transactionDTO;
+        return transactionRepository.save(transaction);
     }
 }
