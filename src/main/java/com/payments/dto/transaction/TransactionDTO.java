@@ -3,6 +3,7 @@ package com.payments.dto.transaction;
 import com.payments.domain.transaction.Transaction;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class TransactionDTO {
     private Long id;
@@ -42,5 +43,16 @@ public class TransactionDTO {
 
     public void setPaymentMethodId(long paymentMethodId) {
         this.paymentMethodId = paymentMethodId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof TransactionDTO that)) return false;
+        return Objects.equals(id, that.id) && Objects.equals(amount, that.amount) && Objects.equals(paymentMethodId, that.paymentMethodId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, amount, paymentMethodId);
     }
 }

@@ -1,5 +1,6 @@
 package com.payments.controller;
 
+import com.payments.domain.payment.AbstractPaymentMethod;
 import com.payments.domain.payment.Payment;
 import com.payments.dto.transaction.TransactionDTO;
 import com.payments.repository.PaymentMethodRepository;
@@ -36,9 +37,11 @@ public class TransactionController {
 
     @PostMapping("/new")
     public String submitForm(@ModelAttribute("form") TransactionDTO form, RedirectAttributes redirectAttributes) {
-        Payment payment = transactionService.create(form).getPayment();
-
-        redirectAttributes.addFlashAttribute("successPayment", payment.pay(form.getAmount()));
+        AbstractPaymentMethod payment = transactionService.create(form).getPayment();
+        if(payment.pay(form.getAmount())) {
+            String paymentMessage = "Paid " + form.getAmount() + " with " + payment.getType() + " - " + payment.getAccountId();
+            redirectAttributes.addFlashAttribute("successPaymentMessage", paymentMessage);
+        }
         return "redirect:/transactions/new";
     }
 }
