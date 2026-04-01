@@ -16,4 +16,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public interface PaymentMethodDTO {
     long id();
     String type();
+    String accountId();
 }
