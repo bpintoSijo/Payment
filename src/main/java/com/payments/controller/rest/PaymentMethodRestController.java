@@ -24,7 +24,7 @@ public class PaymentMethodRestController {
         return ResponseEntity.ok(payment);
     }
 
-    @GetMapping("")
+    @GetMapping
     public ResponseEntity<List<PaymentMethodDTO>> getAvailablePaymentMethods() {
         return ResponseEntity.ok(paymentMethodService.getAvailablePaymentMethod());
     }

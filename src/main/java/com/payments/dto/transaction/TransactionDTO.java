@@ -1,5 +1,7 @@
 package com.payments.dto.transaction;
 
+import com.payments.domain.transaction.Transaction;
+
 import java.math.BigDecimal;
 
 public class TransactionDTO {
@@ -9,6 +11,13 @@ public class TransactionDTO {
 
     public TransactionDTO() {
         // Empty to used with SpringBoot
+    }
+
+    public static TransactionDTO fromEntity(Transaction transaction) {
+        TransactionDTO dto = new TransactionDTO();
+        dto.setId(transaction.getId());
+        dto.setAmount(transaction.getAmount());
+        return dto;
     }
 
     public Long getId() {
