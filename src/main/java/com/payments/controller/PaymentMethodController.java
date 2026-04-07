@@ -31,7 +31,7 @@ public class PaymentMethodController {
     public String submitForm(@ModelAttribute("form") PaymentMethodFormDTO form, RedirectAttributes redirectAttributes) {
         paymentMethodService.create(form.toDTO());
         redirectAttributes.addFlashAttribute("successMessage",
-                "Payment method " + form.getType() + " — " + form.getAccountId() + " created successfully.");
+                "Payment method " + form.getType() + " - " + form.getAccountId() + " created successfully.");
         return "redirect:/payment-methods/new";
     }
 }

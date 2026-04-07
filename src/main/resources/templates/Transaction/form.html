@@ -9,8 +9,8 @@
     <div class="card">
         <h1>New Transaction</h1>
 
-        <div class="success-banner" th:if="${successPayment}">
-            <strong th:text="${successPayment}"></strong>
+        <div class="success-banner" th:if="${successPaymentMessage}">
+            <strong th:text="${successPaymentMessage}"></strong>
         </div>
 
         <form th:action="@{/transactions/new}" th:object="${form}" method="post">
@@ -25,7 +25,7 @@
                     <option value="">-- Select a payment method --</option>
                     <option th:each="pm : ${paymentMethods}"
                             th:value="${pm.id}"
-                            th:text="${pm.type + ' — ' + pm.accountId}">
+                            th:text="${pm.type + ' - ' + pm.accountId}">
                     </option>
                 </select>
             </div>

@@ -67,21 +67,12 @@ public abstract class AbstractPaymentMethod implements Payment {
     }
 
     @Override
-    public String pay(BigDecimal amount) {
+    public boolean pay(BigDecimal amount) {
         if(amount == null) {
-            throw new IllegalArgumentException("Can't pay with a null amount");
+            return false;
         }
 
-        StringBuilder payMessageBuilder;
-        if(BigDecimal.ZERO.compareTo(amount) > 0) {
-            payMessageBuilder = new StringBuilder("Payment refused ");
-        } else {
-            payMessageBuilder = new StringBuilder("Paid ");
-        }
-
-        payMessageBuilder.append(amount).append(" using ").append(getType())
-                .append(" - ").append(accountId);
-        return payMessageBuilder.toString();
+        return BigDecimal.ZERO.compareTo(amount) <= 0;
     }
 
     @Override

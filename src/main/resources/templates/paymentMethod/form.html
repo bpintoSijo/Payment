@@ -34,7 +34,7 @@
 
         <h2 th:if="${not #lists.isEmpty(paymentMethods)}">Existing Payment Methods</h2>
         <ul th:if="${not #lists.isEmpty(paymentMethods)}">
-            <li th:each="pm : ${paymentMethods}" th:text="${pm.type() + ' - ' + pm.accountId()}"></li>
+            <li th:each="pm : ${paymentMethods}" th:text="${pm.type + ' - ' + pm.accountId}"></li>
         </ul>
     </div>
     </body>
