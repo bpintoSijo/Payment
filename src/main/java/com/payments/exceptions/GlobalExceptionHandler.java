@@ -20,9 +20,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ExceptionDTO("Invalid request"));
     }
-
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ExceptionDTO> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ExceptionDTO("Internal server error"));
-    }
 }
