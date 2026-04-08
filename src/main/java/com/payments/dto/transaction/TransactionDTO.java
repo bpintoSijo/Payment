@@ -14,6 +14,12 @@ public class TransactionDTO {
         // Empty to used with SpringBoot
     }
 
+    public TransactionDTO(Long id, BigDecimal amount, Long paymentMethodId) {
+        this.id = id;
+        this.amount = amount;
+        this.paymentMethodId = paymentMethodId;
+    }
+
     public static TransactionDTO fromEntity(Transaction transaction) {
         TransactionDTO dto = new TransactionDTO();
         dto.setId(transaction.getId());

@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-//TODO FAIRE TESTS implémenter tests fonctionnels automatisé (Cucumber) commité tout sur git creéer branches features + 80% de couverture de code
 // TODO workflow de la transactions jusqu'a OK ou NON. Penser à un process => camunda.
 // TODO Pipeline Jenkins
 @Controller
@@ -36,7 +35,7 @@ public class TransactionController {
 
     @PostMapping("/new")
     public String submitForm(@ModelAttribute("form") TransactionDTO form, RedirectAttributes redirectAttributes) {
-        AbstractPaymentMethod payment = transactionService.create(form).getPayment();
+        AbstractPaymentMethod payment = transactionService.create(form.getAmount(), form.getPaymentMethodId()).getPayment();
         if(payment.pay(form.getAmount())) {
             String paymentMessage = "Paid " + form.getAmount() + " with " + payment.getType() + " - " + payment.getAccountId();
             redirectAttributes.addFlashAttribute("successPaymentMessage", paymentMessage);

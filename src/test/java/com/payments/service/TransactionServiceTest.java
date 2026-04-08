@@ -34,14 +34,11 @@ class TransactionServiceTest {
     @Test
     void create_validPaymentMethod_savesAndReturnsTransaction() {
         CreditCardPayment card = new CreditCardPayment("card-001");
-        TransactionDTO dto = new TransactionDTO();
-        dto.setPaymentMethodId(1L);
-        dto.setAmount(new BigDecimal("75.00"));
 
         when(paymentMethodRepository.findById(1L)).thenReturn(Optional.of(card));
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Transaction result = transactionService.create(dto);
+        Transaction result = transactionService.create(new BigDecimal("75.00"), 1L);
 
         assertThat(result.getAmount()).isEqualByComparingTo("75.00");
         assertThat(result.getPayment()).isEqualTo(card);
@@ -50,13 +47,9 @@ class TransactionServiceTest {
 
     @Test
     void create_unknownPaymentMethodId_throwsIllegalArgumentException() {
-        TransactionDTO dto = new TransactionDTO();
-        dto.setPaymentMethodId(99L);
-        dto.setAmount(BigDecimal.TEN);
-
         when(paymentMethodRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> transactionService.create(dto))
+        assertThatThrownBy(() -> transactionService.create(BigDecimal.TEN, 99L))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("Payment method not found: 99");
     }

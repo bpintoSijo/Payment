@@ -19,6 +19,8 @@ public class TransactionRestController {
 
     @PostMapping
     public ResponseEntity<TransactionDTO> create(@RequestBody TransactionDTO transactionDTO) {
-        return ResponseEntity.ok(TransactionDTO.fromEntity(transactionService.create(transactionDTO)));
+        return ResponseEntity.ok(
+                TransactionDTO.fromEntity(transactionService.create(transactionDTO.getAmount(), transactionDTO.getPaymentMethodId()))
+        );
     }
 }
