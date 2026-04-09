@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             targetNamespace="http://bpmn.io/schema/bpmn"
+             exporter="Camunda Modeler"
+             exporterVersion="5.0.0">
+
+  <process id="paymentTransactionProcess" name="Payment Transaction Process" isExecutable="true" camunda:historyTimeToLive="90">
+
+    <!-- Start Event -->
+    <startEvent id="startEvent" name="Transaction initiated">
+      <outgoing>flow_start_to_validate</outgoing>
+    </startEvent>
+
+    <!-- Step 1: Validate payment data -->
+    <serviceTask id="validateDataTask"
+                 name="Validate payment data"
+                 camunda:delegateExpression="${validatePaymentDelegate}">
+      <incoming>flow_start_to_validate</incoming>
+      <outgoing>flow_validate_to_gateway1</outgoing>
+    </serviceTask>
+
+    <!-- Gateway 1: Data valid? -->
+    <exclusiveGateway id="gateway_dataValid" name="Data valid?">
+      <incoming>flow_validate_to_gateway1</incoming>
+      <outgoing>flow_invalid_data</outgoing>
+      <outgoing>flow_valid_data</outgoing>
+    </exclusiveGateway>
+
+    <!-- Step 2: Check funds -->
+    <serviceTask id="checkFundsTask"
+                 name="Check funds availability"
+                 camunda:delegateExpression="${checkFundsDelegate}">
+      <incoming>flow_valid_data</incoming>
+      <outgoing>flow_check_to_gateway2</outgoing>
+    </serviceTask>
+
+    <!-- Gateway 2: Funds available? -->
+    <exclusiveGateway id="gateway_fundsAvailable" name="Funds available?">
+      <incoming>flow_check_to_gateway2</incoming>
+      <outgoing>flow_insufficient_funds</outgoing>
+      <outgoing>flow_funds_ok</outgoing>
+    </exclusiveGateway>
+
+    <!-- Step 3: Execute payment -->
+    <serviceTask id="executePaymentTask"
+                 name="Execute payment"
+                 camunda:delegateExpression="${executePaymentDelegate}">
+      <incoming>flow_funds_ok</incoming>
+      <outgoing>flow_execute_to_gateway3</outgoing>
+    </serviceTask>
+
+    <!-- Gateway 3: Payment success? -->
+    <exclusiveGateway id="gateway_paymentSuccess" name="Payment success?">
+      <incoming>flow_execute_to_gateway3</incoming>
+      <outgoing>flow_payment_failed</outgoing>
+      <outgoing>flow_payment_success</outgoing>
+    </exclusiveGateway>
+
+    <!-- Step 4a: Notify success -->
+    <serviceTask id="notifySuccessTask"
+                 name="Notify success"
+                 camunda:delegateExpression="${notifySuccessDelegate}">
+      <incoming>flow_payment_success</incoming>
+      <outgoing>flow_success_to_end</outgoing>
+    </serviceTask>
+
+    <!-- Step 4b: Notify failure (shared by all error paths) -->
+    <serviceTask id="notifyFailureTask"
+                 name="Notify failure"
+                 camunda:delegateExpression="${notifyFailureDelegate}">
+      <incoming>flow_invalid_data</incoming>
+      <incoming>flow_insufficient_funds</incoming>
+      <incoming>flow_payment_failed</incoming>
+      <outgoing>flow_failure_to_end</outgoing>
+    </serviceTask>
+
+    <!-- End Events -->
+    <endEvent id="endSuccess" name="Transaction completed">
+      <incoming>flow_success_to_end</incoming>
+    </endEvent>
+
+    <endEvent id="endFailure" name="Transaction failed">
+      <incoming>flow_failure_to_end</incoming>
+    </endEvent>
+
+    <!-- Sequence Flows -->
+    <sequenceFlow id="flow_start_to_validate"     sourceRef="startEvent"          targetRef="validateDataTask"/>
+    <sequenceFlow id="flow_validate_to_gateway1"  sourceRef="validateDataTask"    targetRef="gateway_dataValid"/>
+
+    <sequenceFlow id="flow_invalid_data"          sourceRef="gateway_dataValid"   targetRef="notifyFailureTask">
+      <conditionExpression xsi:type="tFormalExpression">${!dataValid}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow_valid_data"            sourceRef="gateway_dataValid"   targetRef="checkFundsTask">
+      <conditionExpression xsi:type="tFormalExpression">${dataValid}</conditionExpression>
+    </sequenceFlow>
+
+    <sequenceFlow id="flow_check_to_gateway2"     sourceRef="checkFundsTask"      targetRef="gateway_fundsAvailable"/>
+
+    <sequenceFlow id="flow_insufficient_funds"    sourceRef="gateway_fundsAvailable" targetRef="notifyFailureTask">
+      <conditionExpression xsi:type="tFormalExpression">${!fundsAvailable}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow_funds_ok"              sourceRef="gateway_fundsAvailable" targetRef="executePaymentTask">
+      <conditionExpression xsi:type="tFormalExpression">${fundsAvailable}</conditionExpression>
+    </sequenceFlow>
+
+    <sequenceFlow id="flow_execute_to_gateway3"   sourceRef="executePaymentTask"  targetRef="gateway_paymentSuccess"/>
+
+    <sequenceFlow id="flow_payment_failed"        sourceRef="gateway_paymentSuccess" targetRef="notifyFailureTask">
+      <conditionExpression xsi:type="tFormalExpression">${!paymentSuccess}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow_payment_success"       sourceRef="gateway_paymentSuccess" targetRef="notifySuccessTask">
+      <conditionExpression xsi:type="tFormalExpression">${paymentSuccess}</conditionExpression>
+    </sequenceFlow>
+
+    <sequenceFlow id="flow_success_to_end"        sourceRef="notifySuccessTask"   targetRef="endSuccess"/>
+    <sequenceFlow id="flow_failure_to_end"        sourceRef="notifyFailureTask"   targetRef="endFailure"/>
+
+  </process>
+
+  <!-- Diagram Layout (BPMNDI) -->
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="paymentTransactionProcess">
+
+      <!-- Start -->
+      <bpmndi:BPMNShape id="shape_startEvent" bpmnElement="startEvent">
+        <dc:Bounds x="152" y="202" width="36" height="36"/>
+        <bpmndi:BPMNLabel><dc:Bounds x="128" y="245" width="84" height="27"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Validate -->
+      <bpmndi:BPMNShape id="shape_validateDataTask" bpmnElement="validateDataTask">
+        <dc:Bounds x="240" y="180" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Gateway 1 -->
+      <bpmndi:BPMNShape id="shape_gateway_dataValid" bpmnElement="gateway_dataValid" isMarkerVisible="true">
+        <dc:Bounds x="415" y="195" width="50" height="50"/>
+        <bpmndi:BPMNLabel><dc:Bounds x="405" y="252" width="70" height="27"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Check Funds -->
+      <bpmndi:BPMNShape id="shape_checkFundsTask" bpmnElement="checkFundsTask">
+        <dc:Bounds x="530" y="180" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Gateway 2 -->
+      <bpmndi:BPMNShape id="shape_gateway_fundsAvailable" bpmnElement="gateway_fundsAvailable" isMarkerVisible="true">
+        <dc:Bounds x="715" y="195" width="50" height="50"/>
+        <bpmndi:BPMNLabel><dc:Bounds x="700" y="252" width="80" height="27"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Execute Payment -->
+      <bpmndi:BPMNShape id="shape_executePaymentTask" bpmnElement="executePaymentTask">
+        <dc:Bounds x="830" y="180" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Gateway 3 -->
+      <bpmndi:BPMNShape id="shape_gateway_paymentSuccess" bpmnElement="gateway_paymentSuccess" isMarkerVisible="true">
+        <dc:Bounds x="1015" y="195" width="50" height="50"/>
+        <bpmndi:BPMNLabel><dc:Bounds x="995" y="252" width="90" height="27"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Notify Success -->
+      <bpmndi:BPMNShape id="shape_notifySuccessTask" bpmnElement="notifySuccessTask">
+        <dc:Bounds x="1130" y="180" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+
+      <!-- Notify Failure -->
+      <bpmndi:BPMNShape id="shape_notifyFailureTask" bpmnElement="notifyFailureTask">
+        <dc:Bounds x="830" y="360" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+
+      <!-- End Success -->
+      <bpmndi:BPMNShape id="shape_endSuccess" bpmnElement="endSuccess">
+        <dc:Bounds x="1312" y="202" width="36" height="36"/>
+        <bpmndi:BPMNLabel><dc:Bounds x="1285" y="245" width="90" height="27"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- End Failure -->
+      <bpmndi:BPMNShape id="shape_endFailure" bpmnElement="endFailure">
+        <dc:Bounds x="982" y="382" width="36" height="36"/>
+        <bpmndi:BPMNLabel><dc:Bounds x="958" y="425" width="84" height="27"/></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <!-- Edges -->
+      <bpmndi:BPMNEdge id="edge_start_validate"     bpmnElement="flow_start_to_validate">    <di:waypoint x="188" y="220"/><di:waypoint x="240" y="220"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_validate_gw1"       bpmnElement="flow_validate_to_gateway1"> <di:waypoint x="360" y="220"/><di:waypoint x="415" y="220"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_invalid"            bpmnElement="flow_invalid_data">         <di:waypoint x="440" y="245"/><di:waypoint x="440" y="400"/><di:waypoint x="830" y="400"/><bpmndi:BPMNLabel><dc:Bounds x="446" y="378" width="53" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_valid"              bpmnElement="flow_valid_data">           <di:waypoint x="465" y="220"/><di:waypoint x="530" y="220"/><bpmndi:BPMNLabel><dc:Bounds x="486" y="202" width="27" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_check_gw2"          bpmnElement="flow_check_to_gateway2">   <di:waypoint x="650" y="220"/><di:waypoint x="715" y="220"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_insufficient"       bpmnElement="flow_insufficient_funds">   <di:waypoint x="740" y="245"/><di:waypoint x="740" y="400"/><di:waypoint x="830" y="400"/><bpmndi:BPMNLabel><dc:Bounds x="748" y="378" width="53" height="27"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_funds_ok"           bpmnElement="flow_funds_ok">             <di:waypoint x="765" y="220"/><di:waypoint x="830" y="220"/><bpmndi:BPMNLabel><dc:Bounds x="785" y="202" width="27" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_execute_gw3"        bpmnElement="flow_execute_to_gateway3"> <di:waypoint x="950" y="220"/><di:waypoint x="1015" y="220"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_failed"             bpmnElement="flow_payment_failed">       <di:waypoint x="1040" y="245"/><di:waypoint x="1040" y="400"/><di:waypoint x="950" y="400"/><bpmndi:BPMNLabel><dc:Bounds x="1048" y="378" width="53" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_success"            bpmnElement="flow_payment_success">      <di:waypoint x="1065" y="220"/><di:waypoint x="1130" y="220"/><bpmndi:BPMNLabel><dc:Bounds x="1084" y="202" width="27" height="14"/></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_success_end"        bpmnElement="flow_success_to_end">       <di:waypoint x="1250" y="220"/><di:waypoint x="1312" y="220"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_failure_end"        bpmnElement="flow_failure_to_end">       <di:waypoint x="950" y="400"/><di:waypoint x="982" y="400"/></bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

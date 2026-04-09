@@ -1,6 +1,7 @@
 package com.payments.controller.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.payments.config.TestConfig;
 import com.payments.domain.payment.CreditCardPayment;
 import com.payments.domain.transaction.Transaction;
 import com.payments.dto.transaction.TransactionDTO;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@Import(TestConfig.class)
 @ActiveProfiles("test")
 class TransactionRestControllerTest {
 

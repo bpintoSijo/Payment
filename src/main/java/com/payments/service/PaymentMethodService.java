@@ -45,9 +45,10 @@ public class PaymentMethodService {
         return true;
     }
 
-    public void pay(AbstractPaymentMethod payment, BigDecimal amount) {
-        payment.pay(amount);
+    public boolean pay(AbstractPaymentMethod payment, BigDecimal amount) {
+        boolean paymentSuccess = payment.pay(amount);
         transactionService.create(amount, payment.getId());
+        return paymentSuccess;
     }
 
     @Transactional

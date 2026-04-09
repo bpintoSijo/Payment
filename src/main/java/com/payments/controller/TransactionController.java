@@ -3,6 +3,7 @@ package com.payments.controller;
 import com.payments.domain.payment.AbstractPaymentMethod;
 import com.payments.dto.transaction.TransactionDTO;
 import com.payments.repository.PaymentMethodRepository;
+import com.payments.service.PaymentProcessService;
 import com.payments.service.TransactionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,10 +21,15 @@ public class TransactionController {
 
     private final TransactionService transactionService;
     private final PaymentMethodRepository paymentMethodRepository;
+    private final PaymentProcessService paymentProcessService;
 
-    public TransactionController(TransactionService transactionService, PaymentMethodRepository paymentMethodRepository) {
+    public TransactionController(TransactionService transactionService,
+                                 PaymentMethodRepository paymentMethodRepository,
+                                 PaymentProcessService paymentProcessService
+    ) {
         this.transactionService = transactionService;
         this.paymentMethodRepository = paymentMethodRepository;
+        this.paymentProcessService = paymentProcessService;
     }
 
     @GetMapping("/new")
@@ -36,6 +42,7 @@ public class TransactionController {
     @PostMapping("/new")
     public String submitForm(@ModelAttribute("form") TransactionDTO form, RedirectAttributes redirectAttributes) {
         AbstractPaymentMethod payment = transactionService.create(form.getAmount(), form.getPaymentMethodId()).getPayment();
+        paymentProcessService.startPaymentTransaction(payment.getAccountId(), payment.getId(), payment.getType(), form.getAmount());
         if(payment.pay(form.getAmount())) {
             String paymentMessage = "Paid " + form.getAmount() + " with " + payment.getType() + " - " + payment.getAccountId();
             redirectAttributes.addFlashAttribute("successPaymentMessage", paymentMessage);
