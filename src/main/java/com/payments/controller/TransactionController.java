@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-// TODO workflow de la transactions jusqu'a OK ou NON. Penser à un process => camunda.
 // TODO Pipeline Jenkins
 @Controller
 @RequestMapping("/transactions")

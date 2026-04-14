@@ -38,4 +38,10 @@ camunda:
 
 # ===== SERVEUR =====
 server:
-  port: 8080
+  port: 8081
+
+app:
+  jwt:
+    cookie-name: jwt
+    secret: MySuperSecretKeyForJWTSigningThatIsAtLeast256BitsLong1234567890
+    expiration-ms: 86400000

@@ -36,7 +36,7 @@ class PaymentMethodControllerTest {
     private PaymentMethodService paymentMethodService;
 
     @Test
-    @DisplayName("GET /payment-methods/new — retourne HTTP 200")
+    @DisplayName("GET /payment-methods/new — return HTTP 200")
     void showForm_returns200() {
         List<PaymentMethodDTO> paymentMethodDTO = List.of(mock(PaymentMethodDTO.class), mock(PaymentMethodDTO.class));
         when(paymentMethodService.getAvailablePaymentMethod()).thenReturn(paymentMethodDTO);
@@ -47,7 +47,7 @@ class PaymentMethodControllerTest {
     }
 
     @Test
-    @DisplayName("GET /payment-methods/new — le corps de la réponse n'est pas vide")
+    @DisplayName("GET /payment-methods/new — Body's response is not empty")
     void showForm_responseBodyIsNotNull() {
         when(paymentMethodService.getAvailablePaymentMethod()).thenReturn(List.of());
 
@@ -67,7 +67,7 @@ class PaymentMethodControllerTest {
     }
 
     @Test
-    @DisplayName("GET /payment-methods/new — fonctionne avec une liste de moyens de paiement")
+    @DisplayName("GET /payment-methods/new — Works with a payment method list")
     void showForm_withPaymentMethods_returns200() {
         List<PaymentMethodDTO> paymentMethodDTO = List.of(mock(PaymentMethodDTO.class), mock(PaymentMethodDTO.class));
         when(paymentMethodService.getAvailablePaymentMethod()).thenReturn(paymentMethodDTO);
