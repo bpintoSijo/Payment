@@ -1,24 +1,20 @@
 package com.payments.dto.transaction;
 
 import com.payments.domain.transaction.Transaction;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.Objects;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter @Setter
 public class TransactionDTO {
     private Long id;
     private BigDecimal amount;
     private Long paymentMethodId;
-
-    public TransactionDTO() {
-        // Empty to used with SpringBoot
-    }
-
-    public TransactionDTO(Long id, BigDecimal amount, Long paymentMethodId) {
-        this.id = id;
-        this.amount = amount;
-        this.paymentMethodId = paymentMethodId;
-    }
+    private Long ownerId;
 
     public static TransactionDTO fromEntity(Transaction transaction) {
         TransactionDTO dto = new TransactionDTO();
@@ -28,38 +24,17 @@ public class TransactionDTO {
         return dto;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public Long getPaymentMethodId() {
-        return paymentMethodId;
-    }
-
-    public void setPaymentMethodId(long paymentMethodId) {
-        this.paymentMethodId = paymentMethodId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof TransactionDTO that)) return false;
-        return Objects.equals(id, that.id) && Objects.equals(amount, that.amount) && Objects.equals(paymentMethodId, that.paymentMethodId);
+        return Objects.equals(id, that.id) &&
+                Objects.equals(amount, that.amount) &&
+                Objects.equals(paymentMethodId, that.paymentMethodId) &&
+                Objects.equals(ownerId, that.getOwnerId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, amount, paymentMethodId);
+        return Objects.hash(id, amount, paymentMethodId, ownerId);
     }
 }

@@ -5,6 +5,7 @@ import com.payments.config.TestConfig;
 import com.payments.domain.payment.CreditCardPayment;
 import com.payments.domain.transaction.Transaction;
 import com.payments.dto.transaction.TransactionDTO;
+import com.payments.config.BaseSecurityTest;
 import com.payments.service.TransactionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(TestConfig.class)
 @ActiveProfiles("test")
-class TransactionRestControllerTest {
+class TransactionRestControllerTest extends BaseSecurityTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -56,7 +57,7 @@ class TransactionRestControllerTest {
     @Test
     @DisplayName("POST /api/transactions — retourne 200 avec le TransactionDTO créé")
     void create_validRequest_returns200WithTransactionDTO() throws Exception {
-        when(transactionService.create(any(BigDecimal.class), any(Long.class)))
+        when(transactionService.create(anyLong(), any(BigDecimal.class), anyLong()))
                 .thenReturn(buildTransaction("99.99", "card-001"));
 
         mockMvc.perform(post("/api/transactions")
@@ -69,7 +70,7 @@ class TransactionRestControllerTest {
     @Test
     @DisplayName("POST /api/transactions — retourne le Content-Type application/json")
     void create_returnsJsonContentType() throws Exception {
-        when(transactionService.create(any(BigDecimal.class), any(Long.class)))
+        when(transactionService.create(anyLong(), any(BigDecimal.class), anyLong()))
                 .thenReturn(buildTransaction("50.00", "card-001"));
 
         mockMvc.perform(post("/api/transactions")
@@ -81,20 +82,20 @@ class TransactionRestControllerTest {
     @Test
     @DisplayName("POST /api/transactions — appelle transactionService.create() une seule fois")
     void create_callsServiceOnce() throws Exception {
-        when(transactionService.create(any(BigDecimal.class), any(Long.class)))
+        when(transactionService.create(anyLong(), any(BigDecimal.class), anyLong()))
                 .thenReturn(buildTransaction("99.99", "card-001"));
 
         mockMvc.perform(post("/api/transactions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(buildRequest("99.99", 1L))));
 
-        verify(transactionService, times(1)).create(any(BigDecimal.class), any(Long.class));
+        verify(transactionService, times(1)).create(anyLong(), any(BigDecimal.class), anyLong());
     }
 
     @Test
     @DisplayName("POST /api/transactions — retourne le montant correct dans la réponse")
     void create_returnsCorrectAmount() throws Exception {
-        when(transactionService.create(any(BigDecimal.class), any(Long.class)))
+        when(transactionService.create(anyLong(), any(BigDecimal.class), anyLong()))
                 .thenReturn(buildTransaction("250.00", "card-002"));
 
         mockMvc.perform(post("/api/transactions")
@@ -124,7 +125,7 @@ class TransactionRestControllerTest {
     //@Test
     @DisplayName("POST /api/transactions — retourne 500 si le service lève une exception")
     void create_returns500_whenServiceThrows() throws Exception {
-        when(transactionService.create(any(BigDecimal.class), any(Long.class)))
+        when(transactionService.create(anyLong(), any(BigDecimal.class), anyLong()))
                 .thenThrow(new RuntimeException("Erreur service"));
 
         mockMvc.perform(post("/api/transactions")
@@ -136,7 +137,7 @@ class TransactionRestControllerTest {
     @Test
     @DisplayName("POST /api/transactions — fonctionne avec un montant à zéro")
     void create_withZeroAmount_returns200() throws Exception {
-        when(transactionService.create(any(BigDecimal.class), any(Long.class)))
+        when(transactionService.create(anyLong(), any(BigDecimal.class), anyLong()))
                 .thenReturn(buildTransaction("0.00", "card-001"));
 
         mockMvc.perform(post("/api/transactions")

@@ -1,8 +1,10 @@
 package com.payments.controller.rest;
 
 import com.payments.dto.transaction.TransactionDTO;
+import com.payments.security.UserDetailsImpl;
 import com.payments.service.TransactionService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,9 +20,9 @@ public class TransactionRestController {
     }
 
     @PostMapping
-    public ResponseEntity<TransactionDTO> create(@RequestBody TransactionDTO transactionDTO) {
+    public ResponseEntity<TransactionDTO> create(@AuthenticationPrincipal UserDetailsImpl user, @RequestBody TransactionDTO transactionDTO) {
         return ResponseEntity.ok(
-                TransactionDTO.fromEntity(transactionService.create(transactionDTO.getAmount(), transactionDTO.getPaymentMethodId()))
+                TransactionDTO.fromEntity(transactionService.create(user.getId(), transactionDTO.getAmount(), transactionDTO.getPaymentMethodId()))
         );
     }
 }

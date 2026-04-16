@@ -7,7 +7,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @CucumberContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false) //TODO REMOVE addFilters = false
 @ActiveProfiles("test")
 public class CucumberSpringConfiguration {
 }
