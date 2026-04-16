@@ -1,10 +1,13 @@
 package com.payments.service;
 
+import com.payments.domain.User;
 import com.payments.domain.payment.AbstractPaymentMethod;
 import com.payments.domain.payment.Payment;
 import com.payments.dto.payment.PaymentMethodDTO;
 import com.payments.repository.PaymentMethodRepository;
+import com.payments.repository.UserRepository;
 import com.payments.strategy.payment.PaymentStrategyRegistry;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,24 +16,19 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentMethodService {
 
     private final PaymentMethodRepository paymentMethodRepository;
     private final PaymentStrategyRegistry paymentStrategyRegistry;
     private final TransactionService transactionService;
-
-    public PaymentMethodService(PaymentMethodRepository paymentMethodRepository,
-                                PaymentStrategyRegistry paymentStrategyRegistry,
-                                TransactionService transactionService
-    ) {
-        this.paymentMethodRepository = paymentMethodRepository;
-        this.paymentStrategyRegistry = paymentStrategyRegistry;
-        this.transactionService = transactionService;
-    }
+    private final UserRepository userRepository;
 
     @Transactional
-    public PaymentMethodDTO create(PaymentMethodDTO paymentMethodDTO) {
+    public PaymentMethodDTO create(Long userId, PaymentMethodDTO paymentMethodDTO) {
+        User user = userRepository.getReferenceById(userId);
         AbstractPaymentMethod payment = paymentStrategyRegistry.create(paymentMethodDTO);
+        payment.setOwner(user);
         paymentMethodRepository.save(payment);
         return paymentStrategyRegistry.toDTO(payment);
     }
@@ -52,8 +50,8 @@ public class PaymentMethodService {
     }
 
     @Transactional
-    public List<PaymentMethodDTO> getAvailablePaymentMethod() {
-        return paymentMethodRepository.findAll()
+    public List<PaymentMethodDTO> getAvailablePaymentMethod(Long userId) {
+        return paymentMethodRepository.findByOwnerId(userId)
                 .stream()
                 .map(paymentStrategyRegistry::toDTO)
                 .toList();

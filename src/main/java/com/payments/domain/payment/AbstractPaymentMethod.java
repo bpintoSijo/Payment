@@ -1,19 +1,21 @@
 package com.payments.domain.payment;
 
-import com.payments.domain.transaction.Transaction;
+import com.payments.domain.User;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table(name="payment_methods")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name="type", discriminatorType = DiscriminatorType.STRING)
+@RequiredArgsConstructor
+@Getter @Setter
 public abstract class AbstractPaymentMethod implements Payment {
-    
     @Id
     @GeneratedValue
     long id;
@@ -21,49 +23,12 @@ public abstract class AbstractPaymentMethod implements Payment {
     @Column(name = "account_id", nullable = false, unique = true)
     String accountId;
 
-    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Transaction> transactions = new ArrayList<>();
-
-    protected AbstractPaymentMethod() {
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User owner;
 
     protected AbstractPaymentMethod(String accountId) {
         this.accountId = accountId;
-    }
-
-    // Default methods
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getAccountId() {
-        return accountId;
-    }
-
-    public boolean addTransaction(Transaction transaction) {
-        transaction.setPayment(this);
-        return transactions.add(transaction);
-    }
-
-    public boolean removeTransaction(Transaction transaction) {
-        transaction.setPayment(null);
-        return transactions.remove(transaction);
-    }
-
-    public List<Transaction> getTransactions() {
-        return transactions;
-    }
-
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
-    public void setTransactions(List<Transaction> transactions) {
-        this.transactions = transactions;
     }
 
     @Override

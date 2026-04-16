@@ -3,17 +3,15 @@ package com.payments.domain.payment;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 
 @Entity
 @Table(name = "paypal_payments")
 @DiscriminatorValue("paypal")
+@NoArgsConstructor
 public class PaypalPayment extends AbstractPaymentMethod implements Payment {
-    public PaypalPayment() {
-
-    }
-
     public PaypalPayment(String id) {
         super(id);
     }

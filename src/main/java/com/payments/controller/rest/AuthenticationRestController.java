@@ -77,22 +77,22 @@ public class AuthenticationRestController {
 
     /**
      * POST /api/auth/logout
-     * Côté stateless JWT, le logout est géré côté client (suppression du token).
-     * Cette route confirme simplement l'intention.
+     * JWT stateless side, logout is managed client side (removal of token).
+     * This path simply confirm the intention.
      */
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AuthenticationDTO.MessageResponse> logout() {
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok(new AuthenticationDTO.MessageResponse(
-                "Logout successfull. Remove token client side.")
+                "Logout successful. Remove token client side.")
         );
     }
 
     /**
      * GET /api/auth/me
-     * Retourne les infos de l'utilisateur connecté.
-     * Nécessite un token JWT valide dans le header Authorization.
+     * Return connected user's information.
+     * A JWT token must be valid in Authorization header.
      */
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")

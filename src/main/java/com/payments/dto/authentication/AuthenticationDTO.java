@@ -3,6 +3,7 @@ package com.payments.dto.authentication;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Set;
@@ -18,6 +19,7 @@ public class AuthenticationDTO {
      * Login request
      * */
     @Data
+    @AllArgsConstructor
     public static class LoginRequest {
         @NotBlank
         private String username;
@@ -30,6 +32,7 @@ public class AuthenticationDTO {
      * Signup request
      * */
     @Data
+    @AllArgsConstructor
     public static class SignupRequest {
         @NotBlank
         @Size(min = 3, max = 40)
@@ -51,6 +54,7 @@ public class AuthenticationDTO {
      * Jwt response
      * */
     @Data
+    @AllArgsConstructor
     public static class JwtResponse {
         private String token;
         private String type = "Bearer";

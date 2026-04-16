@@ -1,28 +1,14 @@
 package com.payments.dto.payment;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@NoArgsConstructor
+@Getter @Setter
 public class PaymentMethodFormDTO {
     private String type;
     private String accountId;
-
-    public PaymentMethodFormDTO() {
-        // Empty for Spring MVC form binding
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
 
     public PaymentMethodDTO toDTO() {
         return switch (type) {

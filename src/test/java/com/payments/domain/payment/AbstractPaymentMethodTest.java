@@ -1,9 +1,8 @@
 package com.payments.domain.payment;
 
+import com.payments.domain.transaction.Transaction;
 import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
-
 import static org.assertj.core.api.Assertions.*;
 
 class AbstractPaymentMethodTest {
@@ -36,23 +35,6 @@ class AbstractPaymentMethodTest {
     void pay_positiveAmount_returnsPaidMessage() {
         boolean result = payment.pay(new BigDecimal("100.50"));
         assertThat(result).isTrue();
-    }
-
-    @Test
-    void addTransaction_linksPaymentToTransaction() {
-        com.payments.domain.transaction.Transaction tx = new com.payments.domain.transaction.Transaction();
-        payment.addTransaction(tx);
-        assertThat(payment.getTransactions()).contains(tx);
-        assertThat(tx.getPayment()).isEqualTo(payment);
-    }
-
-    @Test
-    void removeTransaction_unlinksTransaction() {
-        com.payments.domain.transaction.Transaction tx = new com.payments.domain.transaction.Transaction();
-        payment.addTransaction(tx);
-        payment.removeTransaction(tx);
-        assertThat(payment.getTransactions()).doesNotContain(tx);
-        assertThat(tx.getPayment()).isNull();
     }
 
     @Test

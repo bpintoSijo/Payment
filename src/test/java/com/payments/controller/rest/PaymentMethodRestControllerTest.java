@@ -1,6 +1,7 @@
 package com.payments.controller.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.payments.config.BaseSecurityTest;
 import com.payments.config.TestConfig;
 import com.payments.dto.payment.CreditCardPaymentDTO;
 import com.payments.dto.payment.PaymentMethodDTO;
@@ -24,10 +25,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @Import(TestConfig.class)
 @ActiveProfiles("test")
-class PaymentMethodRestControllerTest {
+class PaymentMethodRestControllerTest extends BaseSecurityTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -44,7 +45,7 @@ class PaymentMethodRestControllerTest {
         CreditCardPaymentDTO request = new CreditCardPaymentDTO(0, "CARD", "card-001");
         CreditCardPaymentDTO response = new CreditCardPaymentDTO(1, "CARD", "card-001");
 
-        when(paymentMethodService.create(any())).thenReturn(response);
+        when(paymentMethodService.create(anyLong(), any())).thenReturn(response);
 
         mockMvc.perform(post("/api/paymentMethod")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -60,13 +61,13 @@ class PaymentMethodRestControllerTest {
         CreditCardPaymentDTO request = new CreditCardPaymentDTO(0, "CARD", "card-001");
         CreditCardPaymentDTO response = new CreditCardPaymentDTO(1, "CARD", "card-001");
 
-        when(paymentMethodService.create(any())).thenReturn(response);
+        when(paymentMethodService.create(anyLong(), any())).thenReturn(response);
 
         mockMvc.perform(post("/api/paymentMethod")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
-        verify(paymentMethodService, times(1)).create(any());
+        verify(paymentMethodService, times(1)).create(anyLong(), any());
     }
 
     @Test
@@ -75,7 +76,7 @@ class PaymentMethodRestControllerTest {
         CreditCardPaymentDTO request = new CreditCardPaymentDTO(0, "CARD", "card-001");
         CreditCardPaymentDTO response = new CreditCardPaymentDTO(1, "CARD", "card-001");
 
-        when(paymentMethodService.create(any())).thenReturn(response);
+        when(paymentMethodService.create(anyLong(), any())).thenReturn(response);
 
         mockMvc.perform(post("/api/paymentMethod")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -88,7 +89,7 @@ class PaymentMethodRestControllerTest {
     void create_returns500_whenServiceThrows() throws Exception {
         CreditCardPaymentDTO request = new CreditCardPaymentDTO(0, "CARD", "card-001");
 
-        when(paymentMethodService.create(any())).thenThrow(new RuntimeException("Erreur service"));
+        when(paymentMethodService.create(anyLong(), any())).thenThrow(new RuntimeException("Erreur service"));
 
         mockMvc.perform(post("/api/paymentMethod")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -112,7 +113,7 @@ class PaymentMethodRestControllerTest {
                 new CreditCardPaymentDTO(2, "CARD", "card-002")
         );
 
-        when(paymentMethodService.getAvailablePaymentMethod()).thenReturn(methods);
+        when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(methods);
 
         mockMvc.perform(get("/api/paymentMethod"))
                 .andExpect(status().isOk())
@@ -124,7 +125,7 @@ class PaymentMethodRestControllerTest {
     @Test
     @DisplayName("GET /api/paymentMethod — retourne 200 avec une liste vide")
     void getAvailablePaymentMethods_emptyList_returns200WithEmptyList() throws Exception {
-        when(paymentMethodService.getAvailablePaymentMethod()).thenReturn(List.of());
+        when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(List.of());
 
         mockMvc.perform(get("/api/paymentMethod"))
                 .andExpect(status().isOk())
@@ -134,7 +135,7 @@ class PaymentMethodRestControllerTest {
     @Test
     @DisplayName("GET /api/paymentMethod — retourne le Content-Type application/json")
     void getAvailablePaymentMethods_returnsJsonContentType() throws Exception {
-        when(paymentMethodService.getAvailablePaymentMethod()).thenReturn(List.of());
+        when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(List.of());
 
         mockMvc.perform(get("/api/paymentMethod"))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
@@ -143,17 +144,17 @@ class PaymentMethodRestControllerTest {
     @Test
     @DisplayName("GET /api/paymentMethod — appelle getAvailablePaymentMethod() une seule fois")
     void getAvailablePaymentMethods_callsServiceOnce() throws Exception {
-        when(paymentMethodService.getAvailablePaymentMethod()).thenReturn(List.of());
+        when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(List.of());
 
         mockMvc.perform(get("/api/paymentMethod"));
 
-        verify(paymentMethodService, times(1)).getAvailablePaymentMethod();
+        verify(paymentMethodService, times(1)).getAvailablePaymentMethod(anyLong());
     }
 
     //@Test
     @DisplayName("GET /api/paymentMethod — retourne 500 si le service lève une exception")
     void getAvailablePaymentMethods_returns500_whenServiceThrows() throws Exception {
-        when(paymentMethodService.getAvailablePaymentMethod())
+        when(paymentMethodService.getAvailablePaymentMethod(anyLong()))
                 .thenThrow(new RuntimeException("Erreur service"));
 
         mockMvc.perform(get("/api/paymentMethod"))

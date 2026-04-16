@@ -2,8 +2,11 @@ package com.payments.controller.rest;
 
 
 import com.payments.dto.payment.PaymentMethodDTO;
+import com.payments.security.UserDetailsImpl;
 import com.payments.service.PaymentMethodService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,13 +22,15 @@ public class PaymentMethodRestController {
     }
 
     @PostMapping
-    public ResponseEntity<PaymentMethodDTO> create(@RequestBody PaymentMethodDTO dto) {
-        PaymentMethodDTO payment = paymentMethodService.create(dto);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<PaymentMethodDTO> create(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody PaymentMethodDTO dto) {
+        PaymentMethodDTO payment = paymentMethodService.create(userDetails.getId(), dto);
         return ResponseEntity.ok(payment);
     }
 
     @GetMapping
-    public ResponseEntity<List<PaymentMethodDTO>> getAvailablePaymentMethods() {
-        return ResponseEntity.ok(paymentMethodService.getAvailablePaymentMethod());
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<PaymentMethodDTO>> getAvailablePaymentMethods(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(paymentMethodService.getAvailablePaymentMethod(userDetails.getId()));
     }
 }

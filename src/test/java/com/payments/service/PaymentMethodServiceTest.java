@@ -37,7 +37,7 @@ class PaymentMethodServiceTest {
         when(paymentStrategyRegistry.create(inputDto)).thenReturn(entity);
         when(paymentStrategyRegistry.toDTO(entity)).thenReturn(savedDto);
 
-        PaymentMethodDTO result = paymentMethodService.create(inputDto);
+        PaymentMethodDTO result = paymentMethodService.create(0L, inputDto);
 
         assertThat(result).isEqualTo(savedDto);
         verify(paymentMethodRepository).save(entity);
@@ -51,16 +51,16 @@ class PaymentMethodServiceTest {
         when(paymentMethodRepository.findAll()).thenReturn(List.of(entity));
         when(paymentStrategyRegistry.toDTO(entity)).thenReturn(dto);
 
-        List<PaymentMethodDTO> result = paymentMethodService.getAvailablePaymentMethod();
+        List<PaymentMethodDTO> result = paymentMethodService.getAvailablePaymentMethod(0L);
 
         assertThat(result).containsExactly(dto);
     }
 
     @Test
     void getAvailablePaymentMethod_emptyRepository_returnsEmptyList() {
-        when(paymentMethodRepository.findAll()).thenReturn(List.of());
+        when(paymentMethodRepository.findByOwnerId(anyLong())).thenReturn(List.of());
 
-        List<PaymentMethodDTO> result = paymentMethodService.getAvailablePaymentMethod();
+        List<PaymentMethodDTO> result = paymentMethodService.getAvailablePaymentMethod(anyLong());
 
         assertThat(result).isEmpty();
     }

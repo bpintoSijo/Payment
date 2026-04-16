@@ -1,13 +1,19 @@
 package com.payments.domain.transaction;
 
+import com.payments.domain.User;
 import com.payments.domain.payment.AbstractPaymentMethod;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
 @Table(name = "transactions")
+@NoArgsConstructor
+@Getter @Setter
 public class Transaction {
 
     @Id
@@ -21,30 +27,9 @@ public class Transaction {
     @JoinColumn(name = "payment_method_id", nullable = false)
     private AbstractPaymentMethod payment;
 
-    public Transaction() {
-        // Empty constructor for Spring boot
-    }
-
-    public long getId() {
-        return id;
-    }
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public AbstractPaymentMethod getPayment() {
-        return payment;
-    }
-    public void setPayment(AbstractPaymentMethod payment) {
-        this.payment = payment;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User owner;
 
     @Override
     public boolean equals(Object obj) {
@@ -53,7 +38,8 @@ public class Transaction {
 
         return id == other.getId() &&
                 Objects.compare(amount, other.getAmount(), BigDecimal::compareTo) == 0 &&
-                Objects.equals(payment, other.getPayment());
+                Objects.equals(payment, other.getPayment()) &&
+                Objects.equals(owner, other.getOwner());
     }
 
     @Override
