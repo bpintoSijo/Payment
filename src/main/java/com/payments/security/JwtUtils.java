@@ -27,7 +27,7 @@ public class JwtUtils {
     @Value("${app.jwt.expiration-ms}")
     private int jwtExpirationMs;
 
-    @Value("${app.jwt.cookie-name")
+    @Value("${app.jwt.cookie-name}")
     private String cookieName;
 
     /**

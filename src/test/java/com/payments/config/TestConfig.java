@@ -16,13 +16,6 @@ import static org.mockito.Mockito.mock;
 @EnableAutoConfiguration(exclude = {
         CamundaBpmAutoConfiguration.class
 })
-@ComponentScan(
-        basePackages = "com.payments",
-        excludeFilters = @ComponentScan.Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                classes = JavaDelegate.class
-        )
-)
 public class TestConfig {
 
     @Bean

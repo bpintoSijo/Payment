@@ -41,6 +41,32 @@ class PaymentMethodFormDTOTest {
                 .hasMessageContaining("Unknown payment type: BITCOIN");
     }
 
+    @Test
+    void toDTO_idIsZero_forAllTypes() {
+        assertThat(formWith("CARD",   "card-001").toDTO().id()).isZero();
+        assertThat(formWith("PAYPAL", "pp@x.com").toDTO().id()).isZero();
+        assertThat(formWith("CRYPTO", "0xABC").toDTO().id()).isZero();
+    }
+
+    @Test
+    void getType_returnsSetValue() {
+        PaymentMethodFormDTO form = formWith("CARD", "card-001");
+        assertThat(form.getType()).isEqualTo("CARD");
+    }
+
+    @Test
+    void getAccountId_returnsSetValue() {
+        PaymentMethodFormDTO form = formWith("CARD", "card-001");
+        assertThat(form.getAccountId()).isEqualTo("card-001");
+    }
+
+    @Test
+    void toDTO_nullType_throwsNullPointerException() {
+        PaymentMethodFormDTO form = formWith(null, "acc-001");
+        assertThatThrownBy(form::toDTO)
+                .isInstanceOf(NullPointerException.class);
+    }
+
     private PaymentMethodFormDTO formWith(String type, String accountId) {
         PaymentMethodFormDTO form = new PaymentMethodFormDTO();
         form.setType(type);

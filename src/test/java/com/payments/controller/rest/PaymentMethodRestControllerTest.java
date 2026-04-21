@@ -1,7 +1,7 @@
 package com.payments.controller.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.payments.config.BaseSecurityTest;
+import com.payments.config.security.BaseSecurityTest;
 import com.payments.config.TestConfig;
 import com.payments.dto.payment.CreditCardPaymentDTO;
 import com.payments.dto.payment.PaymentMethodDTO;
@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
 @Import(TestConfig.class)
 @ActiveProfiles("test")
 class PaymentMethodRestControllerTest extends BaseSecurityTest {
@@ -39,8 +40,12 @@ class PaymentMethodRestControllerTest extends BaseSecurityTest {
     @MockitoBean
     private PaymentMethodService paymentMethodService;
 
+    // -------------------------------------------------------------------------
+    // POST /api/paymentMethod
+    // -------------------------------------------------------------------------
+
     @Test
-    @DisplayName("POST /api/paymentMethod — retourne 200 avec le DTO créé")
+    @DisplayName("POST /api/paymentMethod — return 200 with created DTO")
     void create_validDTO_returns200WithCreatedDTO() throws Exception {
         CreditCardPaymentDTO request = new CreditCardPaymentDTO(0, "CARD", "card-001");
         CreditCardPaymentDTO response = new CreditCardPaymentDTO(1, "CARD", "card-001");
@@ -49,14 +54,33 @@ class PaymentMethodRestControllerTest extends BaseSecurityTest {
 
         mockMvc.perform(post("/api/paymentMethod")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.type").value("CARD"))
                 .andExpect(jsonPath("$.accountId").value("card-001"));
     }
 
     @Test
-    @DisplayName("POST /api/paymentMethod — appelle paymentMethodService.create() une seule fois")
+    @DisplayName("POST /api/paymentMethod — Unauthenticated return 401 ")
+    void create_validDTO_Unauthenticated_return401() throws Exception {
+        // Unauthenticated
+        SecurityContextHolder.clearContext();
+
+        CreditCardPaymentDTO request = new CreditCardPaymentDTO(0, "CARD", "card-001");
+        CreditCardPaymentDTO response = new CreditCardPaymentDTO(1, "CARD", "card-001");
+
+        when(paymentMethodService.create(anyLong(), any())).thenReturn(response);
+
+        mockMvc.perform(post("/api/paymentMethod")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("POST /api/paymentMethod — Call paymentMethodService.create() once")
     void create_callsServiceOnce() throws Exception {
         CreditCardPaymentDTO request = new CreditCardPaymentDTO(0, "CARD", "card-001");
         CreditCardPaymentDTO response = new CreditCardPaymentDTO(1, "CARD", "card-001");
@@ -71,7 +95,7 @@ class PaymentMethodRestControllerTest extends BaseSecurityTest {
     }
 
     @Test
-    @DisplayName("POST /api/paymentMethod — retourne le Content-Type application/json")
+    @DisplayName("POST /api/paymentMethod — return Content-Type application/json")
     void create_returnsJsonContentType() throws Exception {
         CreditCardPaymentDTO request = new CreditCardPaymentDTO(0, "CARD", "card-001");
         CreditCardPaymentDTO response = new CreditCardPaymentDTO(1, "CARD", "card-001");
@@ -98,19 +122,23 @@ class PaymentMethodRestControllerTest extends BaseSecurityTest {
     }
 
     @Test
-    @DisplayName("POST /api/paymentMethod — sans Content-Type retourne 415")
+    @DisplayName("POST /api/paymentMethod — without Content-Type return 415")
     void create_withoutContentType_returns415() throws Exception {
         mockMvc.perform(post("/api/paymentMethod")
                         .content("{}"))
                 .andExpect(status().isUnsupportedMediaType());
     }
 
+    // -------------------------------------------------------------------------
+    // GET /api/paymentMethod
+    // -------------------------------------------------------------------------
+
     @Test
-    @DisplayName("GET /api/paymentMethod — retourne 200 avec la liste des moyens de paiement")
+    @DisplayName("GET /api/paymentMethod — return 200 withlist of payments method ")
     void getAvailablePaymentMethods_returns200WithList() throws Exception {
         List<PaymentMethodDTO> methods = List.of(
                 new CreditCardPaymentDTO(1, "CARD", "card-001"),
-                new CreditCardPaymentDTO(2, "CARD", "card-002")
+                new CreditCardPaymentDTO(2, "PAYPAL", "test@paypal.com")
         );
 
         when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(methods);
@@ -118,12 +146,14 @@ class PaymentMethodRestControllerTest extends BaseSecurityTest {
         mockMvc.perform(get("/api/paymentMethod"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].type").value("CARD"))
                 .andExpect(jsonPath("$[0].accountId").value("card-001"))
-                .andExpect(jsonPath("$[1].accountId").value("card-002"));
+                .andExpect(jsonPath("$[1].type").value("PAYPAL"))
+                .andExpect(jsonPath("$[1].accountId").value("test@paypal.com"));
     }
 
     @Test
-    @DisplayName("GET /api/paymentMethod — retourne 200 avec une liste vide")
+    @DisplayName("GET /api/paymentMethod — return 200 with empty list")
     void getAvailablePaymentMethods_emptyList_returns200WithEmptyList() throws Exception {
         when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(List.of());
 
@@ -133,7 +163,7 @@ class PaymentMethodRestControllerTest extends BaseSecurityTest {
     }
 
     @Test
-    @DisplayName("GET /api/paymentMethod — retourne le Content-Type application/json")
+    @DisplayName("GET /api/paymentMethod — return Content-Type application/json")
     void getAvailablePaymentMethods_returnsJsonContentType() throws Exception {
         when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(List.of());
 
@@ -142,7 +172,7 @@ class PaymentMethodRestControllerTest extends BaseSecurityTest {
     }
 
     @Test
-    @DisplayName("GET /api/paymentMethod — appelle getAvailablePaymentMethod() une seule fois")
+    @DisplayName("GET /api/paymentMethod — call getAvailablePaymentMethod() once")
     void getAvailablePaymentMethods_callsServiceOnce() throws Exception {
         when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(List.of());
 

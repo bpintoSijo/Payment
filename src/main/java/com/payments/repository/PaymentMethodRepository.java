@@ -1,6 +1,5 @@
 package com.payments.repository;
 
-import com.payments.domain.User;
 import com.payments.domain.payment.AbstractPaymentMethod;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

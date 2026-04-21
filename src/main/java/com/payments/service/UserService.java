@@ -5,6 +5,7 @@ import com.payments.dto.authentication.AuthenticationDTO;
 import com.payments.repository.UserRepository;
 import com.payments.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +58,7 @@ public class UserService {
                 userDetails.getUsername(),
                 userDetails.getEmail(),
                 userDetails.getAuthorities().stream()
-                        .map(a -> a.getAuthority())
+                        .map(GrantedAuthority::getAuthority)
                         .collect(java.util.stream.Collectors.toSet())
         );
     }

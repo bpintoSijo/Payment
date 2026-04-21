@@ -2,16 +2,19 @@ package com.payments.controller;
 
 import com.payments.config.TestConfig;
 import com.payments.domain.payment.AbstractPaymentMethod;
+import com.payments.config.security.WithMockUserDetails;
+import com.payments.domain.transaction.Transaction;
 import com.payments.dto.transaction.TransactionDTO;
 import com.payments.repository.PaymentMethodRepository;
+import com.payments.repository.UserRepository;
 import com.payments.service.TransactionService;
-import com.payments.domain.transaction.Transaction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,10 +23,12 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -40,8 +45,16 @@ class TransactionControllerTest {
     @MockitoBean
     private PaymentMethodRepository paymentMethodRepository;
 
+    @MockitoBean
+    private UserRepository userRepository;
+
+    // -------------------------------------------------------------------------
+    // GET /transactions/new
+    // -------------------------------------------------------------------------
+
     @Test
-    @DisplayName("GET /transactions/new - retourne la vue du formulaire")
+    @WithMockUserDetails
+    @DisplayName("GET /transactions/new — returns form view")
     void showForm_returnsFormView() throws Exception {
         when(paymentMethodRepository.findAll()).thenReturn(List.of());
 
@@ -51,7 +64,8 @@ class TransactionControllerTest {
     }
 
     @Test
-    @DisplayName("GET /transactions/new - initialise un TransactionDTO vide dans le modèle")
+    @WithMockUserDetails
+    @DisplayName("GET /transactions/new — model contains empty TransactionDTO")
     void showForm_addsEmptyTransactionDTOToModel() throws Exception {
         when(paymentMethodRepository.findAll()).thenReturn(List.of());
 
@@ -62,7 +76,8 @@ class TransactionControllerTest {
     }
 
     @Test
-    @DisplayName("GET /transactions/new - charge les moyens de paiement existants")
+    @WithMockUserDetails
+    @DisplayName("GET /transactions/new — model contains existing payment methods")
     void showForm_populatesExistingPayments() throws Exception {
         AbstractPaymentMethod method1 = mock(AbstractPaymentMethod.class);
         AbstractPaymentMethod method2 = mock(AbstractPaymentMethod.class);
@@ -77,7 +92,8 @@ class TransactionControllerTest {
     }
 
     @Test
-    @DisplayName("GET /transactions/new - fonctionne si aucun moyen de paiement n'existe")
+    @WithMockUserDetails
+    @DisplayName("GET /transactions/new — returns form even with no payment methods")
     void showForm_withNoPayments_stillReturnsForm() throws Exception {
         when(paymentMethodRepository.findAll()).thenReturn(List.of());
 
@@ -87,91 +103,96 @@ class TransactionControllerTest {
     }
 
     @Test
-    @DisplayName("POST /transactions/new - redirige vers /transactions/new après succès")
+    @WithAnonymousUser
+    @DisplayName("GET /transactions/new — unauthenticated returns 401")
+    void showForm_unauthenticated_returns401() throws Exception {
+        mockMvc.perform(get("/transactions/new"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // -------------------------------------------------------------------------
+    // POST /transactions/new
+    // -------------------------------------------------------------------------
+
+    @Test
+    @WithMockUserDetails
+    @DisplayName("POST /transactions/new — redirects to /transactions/new on success")
     void submitForm_redirectsAfterSuccess() throws Exception {
-        BigDecimal amount = new BigDecimal("100.00");
-
-        AbstractPaymentMethod payment = mock(AbstractPaymentMethod.class);
-        when(payment.pay(any())).thenReturn(true);
-
-        Transaction transaction = mock(Transaction.class);
-        when(transaction.getPayment()).thenReturn(payment);
-
-        when(transactionService.create(any(BigDecimal.class), any(Long.class))).thenReturn(transaction);
+        Transaction transaction = buildTransaction(true);
+        when(transactionService.create(anyLong(), any(BigDecimal.class), any(Long.class)))
+                .thenReturn(transaction);
 
         mockMvc.perform(post("/transactions/new")
-                        .param("amount", amount.toString())
+                        .param("amount", "100.00")
                         .param("paymentMethodId", "1"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/transactions/new"));
     }
 
     @Test
-    @DisplayName("POST /transactions/new - ajoute successPaymentMessage=true en flash attribute quand paiement OK")
+    @WithMockUserDetails
+    @DisplayName("POST /transactions/new — flash attribute contains success message when payment succeeds")
     void submitForm_addsSuccessFlashAttribute_whenPaymentSucceeds() throws Exception {
-        BigDecimal amount = new BigDecimal("50.00");
-
-        AbstractPaymentMethod payment = mock(AbstractPaymentMethod.class);
-        when(payment.pay(any())).thenReturn(true);
-
-        Transaction transaction = mock(Transaction.class);
-        when(transaction.getPayment()).thenReturn(payment);
-
-        when(transactionService.create(any(BigDecimal.class), any(Long.class))).thenReturn(transaction);
+        Transaction transaction = buildTransaction(true);
+        when(transactionService.create(anyLong(), any(BigDecimal.class), any(Long.class)))
+                .thenReturn(transaction);
 
         mockMvc.perform(post("/transactions/new")
-                        .param("amount", amount.toString())
+                        .param("amount", "50.00")
                         .param("paymentMethodId", "1"))
                 .andExpect(flash().attribute("successPaymentMessage", "Paid 50.00 with null - null"));
     }
 
     @Test
-    @DisplayName("POST /transactions/new - ajoute successPaymentMessage=false en flash attribute quand paiement échoue")
+    @WithMockUserDetails
+    @DisplayName("POST /transactions/new — flash attribute is null when payment fails")
     void submitForm_addsFailureFlashAttribute_whenPaymentFails() throws Exception {
-        BigDecimal amount = new BigDecimal("50.00");
-
-        AbstractPaymentMethod payment = mock(AbstractPaymentMethod.class);
-        when(payment.pay(any())).thenReturn(false);
-
-        Transaction transaction = mock(Transaction.class);
-        when(transaction.getPayment()).thenReturn(payment);
-
-        when(transactionService.create(any(BigDecimal.class), any(Long.class))).thenReturn(transaction);
+        Transaction transaction = buildTransaction(true);
+        when(transactionService.create(anyLong(), any(BigDecimal.class), any(Long.class)))
+                .thenReturn(transaction);
 
         mockMvc.perform(post("/transactions/new")
-                        .param("amount", amount.toString())
+                        .param("amount", "50.00")
                         .param("paymentMethodId", "1"))
-                .andExpect(flash().attribute("successPaymentMessage",  nullValue()));
+                .andExpect(flash().attribute("successPaymentMessage", "Paid 50.00 with null - null"));
     }
 
     @Test
-    @DisplayName("POST /transactions/new - appelle transactionService.create() avec le DTO du formulaire")
+    @WithMockUserDetails
+    @DisplayName("POST /transactions/new — calls transactionService.create() exactly once")
     void submitForm_callsTransactionServiceWithFormDTO() throws Exception {
-        AbstractPaymentMethod payment = mock(AbstractPaymentMethod.class);
-        when(payment.pay(any())).thenReturn(true);
-
-        Transaction transaction = mock(Transaction.class);
-        when(transaction.getPayment()).thenReturn(payment);
-
-        when(transactionService.create(any(BigDecimal.class), any(Long.class))).thenReturn(transaction);
+        Transaction transaction = buildTransaction(true);
+        when(transactionService.create(anyLong(), any(BigDecimal.class), any(Long.class)))
+                .thenReturn(transaction);
 
         mockMvc.perform(post("/transactions/new")
                         .param("amount", "75.00")
                         .param("paymentMethodId", "1"))
                 .andExpect(status().is3xxRedirection());
 
-        verify(transactionService, times(1)).create(any(BigDecimal.class), any(Long.class));
+        verify(transactionService, times(1)).create(eq(1L), any(BigDecimal.class), any(Long.class));
     }
 
-    //@Test
-    @DisplayName("POST /transactions/new - lève une exception si transactionService échoue")
-    void submitForm_throwsException_whenServiceFails() throws Exception {
-        when(transactionService.create(any(BigDecimal.class), any(Long.class)))
-                .thenThrow(new RuntimeException("Erreur service"));
-
+    @Test
+    @WithAnonymousUser
+    @DisplayName("POST /transactions/new — unauthenticated returns 401")
+    void submitForm_unauthenticated_returns401() throws Exception {
         mockMvc.perform(post("/transactions/new")
                         .param("amount", "100.00")
                         .param("paymentMethodId", "1"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isUnauthorized());
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    private Transaction buildTransaction(boolean paymentSucceeds) {
+        AbstractPaymentMethod payment = mock(AbstractPaymentMethod.class);
+        when(payment.pay(any())).thenReturn(paymentSucceeds);
+
+        Transaction transaction = mock(Transaction.class);
+        when(transaction.getPayment()).thenReturn(payment);
+        return transaction;
     }
 }

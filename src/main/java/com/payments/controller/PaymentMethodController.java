@@ -4,6 +4,7 @@ import com.payments.dto.payment.PaymentMethodFormDTO;
 import com.payments.security.UserDetailsImpl;
 import com.payments.service.PaymentMethodService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +22,7 @@ public class PaymentMethodController {
     private final PaymentMethodService paymentMethodService;
 
     @GetMapping("/new")
+    @PreAuthorize("isAuthenticated()")
     public String showForm(@AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
         model.addAttribute("form", new PaymentMethodFormDTO());
         model.addAttribute("paymentMethods", paymentMethodService.getAvailablePaymentMethod(userDetails.getId()));
@@ -28,6 +30,7 @@ public class PaymentMethodController {
     }
 
     @PostMapping("/new")
+    @PreAuthorize("isAuthenticated()")
     public String submitForm(@AuthenticationPrincipal UserDetailsImpl userDetails,
                              @ModelAttribute("form") PaymentMethodFormDTO form,
                              RedirectAttributes redirectAttributes

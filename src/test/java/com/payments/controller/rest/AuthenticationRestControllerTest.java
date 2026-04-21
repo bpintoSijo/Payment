@@ -1,7 +1,7 @@
 package com.payments.controller.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.payments.config.BaseSecurityTest;
+import com.payments.config.security.BaseSecurityTest;
 import com.payments.config.TestConfig;
 import com.payments.domain.User;
 import com.payments.dto.authentication.AuthenticationDTO;
@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -68,8 +69,8 @@ class AuthenticationRestControllerTest extends BaseSecurityTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("mocked.jwt.token"))
                 .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.username").value("john"))
-                .andExpect(jsonPath("$.email").value("john@mail.com"))
+                .andExpect(jsonPath("$.username").value("John"))
+                .andExpect(jsonPath("$.email").value("John@test.com"))
                 .andExpect(jsonPath("$.roles").isArray());
     }
 
@@ -102,22 +103,22 @@ class AuthenticationRestControllerTest extends BaseSecurityTest {
     @Test
     @DisplayName("POST /api/auth/login — Try to login with empty username")
     void login_withMissingUsername_returns400() throws Exception {
-        String emptyBody = "{username:\"\", password:\"secret\"}";
+        String emptyUsernameBody = "{username:\"\", password:\"secret\"}";
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(emptyBody))
+                        .content(emptyUsernameBody))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     @DisplayName("POST /api/auth/login — Try to login with empty password")
     void login_withMissingPassword_returns400() throws Exception {
-        String emptyBody = "{username:\"john\", password:\"\"}";
+        String emptyPasswordBody = "{username:\"john\", password:\"\"}";
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(emptyBody))
+                        .content(emptyPasswordBody))
                 .andExpect(status().isBadRequest());
     }
 
@@ -129,10 +130,10 @@ class AuthenticationRestControllerTest extends BaseSecurityTest {
     @DisplayName("POST /api/auth/signup — call UserService.register() with valid data")
     void signup_withValidData_returnsSuccessMessage() throws Exception {
         AuthenticationDTO.SignupRequest signupRequest =
-                new AuthenticationDTO.SignupRequest("john", "john@mail.com", "secret", Set.of("ROLE_USER"));
+                new AuthenticationDTO.SignupRequest("John", "John@test.com", "secret", Set.of("ROLE_USER"));
 
         User createdUser = new User();
-        createdUser.setUsername("john");
+        createdUser.setUsername("John");
 
         when(userService.register(any())).thenReturn(createdUser);
 
@@ -140,14 +141,14 @@ class AuthenticationRestControllerTest extends BaseSecurityTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signupRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("User created: john"));
+                .andExpect(jsonPath("$.message").value("User created: John"));
     }
 
     @Test
     @DisplayName("POST /api/auth/signup — call UserService.register() with a duplicate username")
     void signup_withDuplicateUsername_returns400() throws Exception {
         AuthenticationDTO.SignupRequest signupRequest =
-                new AuthenticationDTO.SignupRequest("john", "john@mail.com", "secret", Set.of("ROLE_USER"));
+                new AuthenticationDTO.SignupRequest("John", "John@test.com", "secret", Set.of("ROLE_USER"));
 
         when(userService.register(any()))
                 .thenThrow(new IllegalArgumentException("Username already taken"));
@@ -163,7 +164,7 @@ class AuthenticationRestControllerTest extends BaseSecurityTest {
     @DisplayName("POST /api/auth/signup — call UserService.register() with a duplicate email")
     void signup_withDuplicateEmail_returns400() throws Exception {
         AuthenticationDTO.SignupRequest signupRequest =
-                new AuthenticationDTO.SignupRequest("john", "john@mail.com", "secret", Set.of("ROLE_USER"));
+                new AuthenticationDTO.SignupRequest("John", "John@test.com", "secret", Set.of("ROLE_USER"));
 
         when(userService.register(any()))
                 .thenThrow(new IllegalArgumentException("Email already taken"));
@@ -179,7 +180,7 @@ class AuthenticationRestControllerTest extends BaseSecurityTest {
     @DisplayName("POST /api/auth/signup — call UserService.register() with a low length username")
     void signup_withUsernameLengthToLow_returns400() throws Exception {
         AuthenticationDTO.SignupRequest signupRequest =
-                new AuthenticationDTO.SignupRequest("jo", "john@mail.com", "secret", Set.of("ROLE_USER"));
+                new AuthenticationDTO.SignupRequest("Jo", "John@test.com", "secret", Set.of("ROLE_USER"));
 
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -191,7 +192,7 @@ class AuthenticationRestControllerTest extends BaseSecurityTest {
     @DisplayName("POST /api/auth/signup — call UserService.register() with a low length password")
     void signup_withPasswordLengthToLow_returns400() throws Exception {
         AuthenticationDTO.SignupRequest signupRequest =
-                new AuthenticationDTO.SignupRequest("john", "john@mail.com", "secre", Set.of("ROLE_USER"));
+                new AuthenticationDTO.SignupRequest("John", "John@test.com", "secre", Set.of("ROLE_USER"));
 
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -210,12 +211,15 @@ class AuthenticationRestControllerTest extends BaseSecurityTest {
                         .with(user(userDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value(
-                        "Logout successfull. Remove token client side."));
+                        "Logout successful. Remove token client side."));
     }
 
     @Test
     @DisplayName("POST /api/auth/logout — call UserService.logout() while unauthenticated")
     void logout_whenUnauthenticated_returns401() throws Exception {
+        // Unauthenticated
+        SecurityContextHolder.clearContext();
+
         mockMvc.perform(post("/api/auth/logout"))
                 .andExpect(status().isUnauthorized());
     }
@@ -228,7 +232,7 @@ class AuthenticationRestControllerTest extends BaseSecurityTest {
     @DisplayName("POST /api/auth/me — call UserService.getCurrentUserInfo() while authenticated")
     void getCurrentUser_whenAuthenticated_returnsUserInfo() throws Exception {
         AuthenticationDTO.UserInformationResponse userInfo =
-                new AuthenticationDTO.UserInformationResponse(1L, "john", "john@mail.com", Set.of("ROLE_USER"));
+                new AuthenticationDTO.UserInformationResponse(1L, "John", "John@test.com", Set.of("ROLE_USER"));
 
         when(userService.getCurrentUserInfo(any())).thenReturn(userInfo);
 
@@ -236,13 +240,16 @@ class AuthenticationRestControllerTest extends BaseSecurityTest {
                         .with(user(userDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.username").value("john"))
-                .andExpect(jsonPath("$.email").value("john@mail.com"));
+                .andExpect(jsonPath("$.username").value("John"))
+                .andExpect(jsonPath("$.email").value("John@test.com"));
     }
 
     @Test
     @DisplayName("POST /api/auth/me — call UserService.getCurrentUserInfo() while unauthenticated")
     void getCurrentUser_whenUnauthenticated_returns401() throws Exception {
+        // Unauthenticated
+        SecurityContextHolder.clearContext();
+
         mockMvc.perform(get("/api/auth/me"))
                 .andExpect(status().isUnauthorized());
     }

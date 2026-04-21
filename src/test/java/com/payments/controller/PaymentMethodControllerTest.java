@@ -1,144 +1,147 @@
 package com.payments.controller;
 
-import com.payments.config.BaseSecurityTest;
-import com.payments.config.TestConfig;
-import com.payments.dto.payment.PaymentMethodDTO;
+import com.payments.config.security.WithMockUserDetails;
 import com.payments.service.PaymentMethodService;
+import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(TestConfig.class)
-class PaymentMethodControllerTest extends BaseSecurityTest {
+class PaymentMethodControllerTest {
 
     @Autowired
-    private TestRestTemplate restTemplate;
+    private MockMvc mockMvc;
 
     @MockitoBean
     private PaymentMethodService paymentMethodService;
 
-    @Test
-    @DisplayName("GET /payment-methods/new — return HTTP 200")
-    void showForm_returns200() {
-        List<PaymentMethodDTO> paymentMethodDTO = List.of(mock(PaymentMethodDTO.class), mock(PaymentMethodDTO.class));
-        when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(paymentMethodDTO);
-
-        ResponseEntity<String> response = restTemplate.getForEntity("/payment-methods/new", String.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    }
+    // -------------------------------------------------------------------------
+    // GET /payment-methods/new
+    // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("GET /payment-methods/new — Body's response is not empty")
-    void showForm_responseBodyIsNotNull() {
+    @DisplayName("GET /payment-methods/new — return 200")
+    @WithMockUserDetails
+    void showForm_returns200() throws Exception {
         when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(List.of());
 
-        ResponseEntity<String> response = restTemplate.getForEntity("/payment-methods/new", String.class);
-
-        assertThat(response.getBody()).isNotNull();
+        mockMvc.perform(get("/payment-methods/new"))
+                .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("GET /payment-methods/new — appelle getAvailablePaymentMethod() une seule fois")
-    void showForm_callsGetAvailablePaymentMethod() {
+    @WithMockUserDetails
+    @DisplayName("GET /payment-methods/new — return 'paymentMethod/form' view")
+    void showForm_returnsCorrectView() throws Exception {
         when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(List.of());
 
-        restTemplate.getForEntity("/payment-methods/new", String.class);
-
-        verify(paymentMethodService, times(1)).getAvailablePaymentMethod(anyLong());
+        mockMvc.perform(get("/payment-methods/new"))
+                .andExpect(view().name("paymentMethod/form"));
     }
 
     @Test
-    @DisplayName("GET /payment-methods/new — Works with a payment method list")
-    void showForm_withPaymentMethods_returns200() {
-        List<PaymentMethodDTO> paymentMethodDTO = List.of(mock(PaymentMethodDTO.class), mock(PaymentMethodDTO.class));
-        when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(paymentMethodDTO);
-
-        ResponseEntity<String> response = restTemplate.getForEntity("/payment-methods/new", String.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        verify(paymentMethodService, times(1)).getAvailablePaymentMethod(anyLong());
-    }
-
-    @Test
-    @DisplayName("GET /payment-methods/new — fonctionne si aucun moyen de paiement n'existe")
-    void showForm_withNoPaymentMethods_returns200() {
+    @WithMockUserDetails
+    @DisplayName("GET /payment-methods/new — model contain 'form' and 'paymentMethods'")
+    void showForm_modelContainsExpectedAttributes() throws Exception {
         when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(List.of());
 
-        ResponseEntity<String> response = restTemplate.getForEntity("/payment-methods/new", String.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        mockMvc.perform(get("/payment-methods/new"))
+                .andExpect(model().attributeExists("form"))
+                .andExpect(model().attributeExists("paymentMethods"));
     }
 
     @Test
-    @DisplayName("POST /payment-methods/new — redirige vers /payment-methods/new après succès")
-    void submitForm_redirectsAfterSuccess() {
-        when(paymentMethodService.create(anyLong(), any())).thenReturn(mock(PaymentMethodDTO.class));
+    @WithMockUserDetails
+    @DisplayName("GET /payment-methods/new — Call getAvailablePaymentMethod() once")
+    void showForm_callsServiceOnce() throws Exception {
+        when(paymentMethodService.getAvailablePaymentMethod(anyLong())).thenReturn(List.of());
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("type", "CARD");
-        formData.add("accountId", "ACC-001");
-        ResponseEntity<String> response = restTemplate.postForEntity("/payment-methods/new", formData, String.class);
+        mockMvc.perform(get("/payment-methods/new"));
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(paymentMethodService, times(1)).getAvailablePaymentMethod(1L);
     }
 
     @Test
-    @DisplayName("POST /payment-methods/new — appelle paymentMethodService.create() une seule fois")
-    void submitForm_callsServiceCreateOnce() {
-        when(paymentMethodService.create(anyLong(), any())).thenReturn(mock(PaymentMethodDTO.class));
+    @WithAnonymousUser
+    @DisplayName("GET /payment-methods/new — Unauthenticated return 401")
+    void showForm_unauthenticated_returns401() throws Exception {
+        mockMvc.perform(get("/payment-methods/new"))
+                .andExpect(status().isUnauthorized());
+    }
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("type", "PAYPAL");
-        formData.add("accountId", "ACC-002");
+    // -------------------------------------------------------------------------
+    // POST /payment-methods/new
+    // -------------------------------------------------------------------------
 
-        restTemplate.postForEntity("/payment-methods/new", formData, String.class);
-        verify(paymentMethodService, times(1)).create(anyLong(), any());
+    @Test
+    @WithMockUserDetails
+    @DisplayName("POST /payment-methods/new — redirect to /payment-methods/new")
+    void submitForm_redirectsToForm() throws Exception {
+        mockMvc.perform(post("/payment-methods/new")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("type", "CARD")
+                        .param("accountId", "ACC-001")
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/payment-methods/new"));
     }
 
     @Test
-    @DisplayName("POST /payment-methods/new — le message de succès contient le type et l'accountId")
-    void submitForm_successMessageContainsTypeAndAccountId() {
-        when(paymentMethodService.create(anyLong(), any())).thenReturn(mock(PaymentMethodDTO.class));
+    @WithMockUserDetails
+    @DisplayName("POST /payment-methods/new — call create() once")
+    void submitForm_callsCreateOnce() throws Exception {
+        mockMvc.perform(post("/payment-methods/new")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("type", "CARD")
+                        .param("accountId", "ACC-001")
+                )
+                .andExpect(status().is3xxRedirection());
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("type", "CARD");
-        formData.add("accountId", "ACC-123");
-
-        ResponseEntity<String> response = restTemplate.postForEntity("/payment-methods/new", formData, String.class);
-        assertThat(response.getBody()).contains("CARD", "ACC-123");
+        verify(paymentMethodService, times(1)).create(eq(1L), any());
     }
 
     @Test
-    @DisplayName("POST /payment-methods/new — retourne 500 si le service lève une exception")
-    void submitForm_returns500_whenServiceThrows() {
-        doThrow(new RuntimeException("Erreur service")).when(paymentMethodService).create(anyLong(), any());
+    @WithMockUserDetails
+    @DisplayName("POST /payment-methods/new — flash message contain type and accountId")
+    void submitForm_flashMessageContainsTypeAndAccountId() throws Exception {
+        mockMvc.perform(post("/payment-methods/new")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("type", "CARD")
+                        .param("accountId", "ACC-001")
+                )
+                .andExpect(flash().attribute("successMessage",
+                        containsString("CARD")))
+                .andExpect(flash().attribute("successMessage",
+                        containsString("ACC-001")));
+    }
 
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("type", "CARD");
-        formData.add("accountId", "ACC-001");
-
-        ResponseEntity<String> response = restTemplate.postForEntity("/payment-methods/new", formData, String.class);
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    @Test
+    @WithAnonymousUser
+    @DisplayName("POST /payment-methods/new — Unauthenticated return 401")
+    void submitForm_unauthenticated_returns401() throws Exception {
+        mockMvc.perform(post("/payment-methods/new")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("type", "CARD")
+                        .param("accountId", "ACC-001")
+                )
+                .andExpect(status().isUnauthorized());
     }
 }

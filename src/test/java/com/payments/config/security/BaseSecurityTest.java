@@ -1,11 +1,11 @@
-package com.payments.config;
+package com.payments.config.security;
 
+import com.payments.domain.User;
 import com.payments.security.UserDetailsImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Set;
@@ -15,15 +15,12 @@ public abstract class BaseSecurityTest {
     protected UserDetailsImpl userDetails;
     protected Authentication authentication;
 
-    @BeforeEach
-    void setUp() {
-        userDetails = new UserDetailsImpl(
-                1L,
-                "john",
-                "john@mail.com",
-                "encodedPassword",
-                Set.of(new SimpleGrantedAuthority("ROLE_USER"))
-        );
+    protected final User defaultTestUser = User.builder()
+            .id(1L).username("John").email("John@test.com").password("password").roles(Set.of("ROLE_USER"))
+            .build();
+
+    private void setUpAuthentication() {
+        userDetails = UserDetailsImpl.build(defaultTestUser);
 
         authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities()
@@ -32,8 +29,13 @@ public abstract class BaseSecurityTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
+    @BeforeEach
+    protected void setUp() {
+        setUpAuthentication();
+    }
+
     @AfterEach
-    void tearDown() {
+    protected void tearDown() {
         SecurityContextHolder.clearContext();
     }
 }

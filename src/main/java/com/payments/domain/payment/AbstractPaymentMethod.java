@@ -1,6 +1,7 @@
 package com.payments.domain.payment;
 
 import com.payments.domain.User;
+import com.payments.exceptions.transaction.NegativeAmountException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +35,14 @@ public abstract class AbstractPaymentMethod implements Payment {
     @Override
     public boolean pay(BigDecimal amount) {
         if(amount == null) {
-            return false;
+            throw new IllegalArgumentException("Could not pay with a Null amount");
         }
 
-        return BigDecimal.ZERO.compareTo(amount) <= 0;
+        if(amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new NegativeAmountException("Could not pay with a Negative amount: " + amount);
+        }
+
+        return true;
     }
 
     @Override
