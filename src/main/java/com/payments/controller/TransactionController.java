@@ -7,6 +7,7 @@ import com.payments.security.UserDetailsImpl;
 import com.payments.service.PaymentProcessService;
 import com.payments.service.TransactionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,9 +28,10 @@ public class TransactionController {
     private final PaymentProcessService paymentProcessService;
 
     @GetMapping("/new")
-    public String showForm(Model model) {
+    @PreAuthorize("isAuthenticated()")
+    public String showForm(@AuthenticationPrincipal UserDetailsImpl user, Model model) {
         model.addAttribute("form", new TransactionDTO());
-        model.addAttribute("paymentMethods", paymentMethodRepository.findAll());
+        model.addAttribute("paymentMethods", paymentMethodRepository.findByOwnerId(user.getId()));
         return "transaction/form";
     }
 

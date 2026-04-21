@@ -68,7 +68,7 @@ public class SecurityConfig {
 
             // Authorization rule
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login", "/api/auth/signup", "/camunda/**").permitAll()
+                .requestMatchers("**/auth/login", "**/auth/signup", "/camunda/**").permitAll()
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",

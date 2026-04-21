@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login</title>
+        <link rel="stylesheet" th:href="@{/css/transaction-form.css}" />
+    </head>
+    <body>
+    <div class="card">
+        <h1>Connexion</h1>
+
+        <div class="error-banner" th:if="${error}" th:text="${error}"></div>
+        <div class="success-banner" th:if="${success}" th:text="${success}"></div>
+
+        <form th:action="@{/auth/login}" th:object="${loginRequest}" method="post">
+            <div class="field">
+                <label for="username">Nom d'utilisateur</label>
+                <input type="text" id="username" th:field="*{username}" placeholder="john" required />
+                <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" style="color:#b91c1c;font-size:0.8rem;"></span>
+            </div>
+            <div class="field">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" th:field="*{password}" placeholder="••••••••" required />
+                <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" style="color:#b91c1c;font-size:0.8rem;"></span>
+            </div>
+            <button type="submit">Se connecter</button>
+        </form>
+
+        <p class="link">Pas encore de compte ? <a th:href="@{/auth/signup}">S'inscrire</a></p>
+    </div>
+    </body>
+</html>

@@ -82,6 +82,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
      */
     private Optional<String> parseJwtFromCookies(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
+        if(cookies == null) {
+            return Optional.empty();
+        }
         for (Cookie cookie : cookies) {
             if (jwtCookieName.equals(cookie.getName())) {
                 return Optional.of(cookie.getValue());

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Set;
 
@@ -20,6 +21,7 @@ public class AuthenticationDTO {
      * */
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class LoginRequest {
         @NotBlank
         private String username;
@@ -33,6 +35,7 @@ public class AuthenticationDTO {
      * */
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class SignupRequest {
         @NotBlank
         @Size(min = 3, max = 40)

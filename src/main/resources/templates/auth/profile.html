@@ -1,0 +1,38 @@
+<!-- auth/me.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mon profil</title>
+        <link rel="stylesheet" th:href="@{/css/transaction-form.css}" />
+    </head>
+    <body>
+    <div class="card">
+        <h1>Mon profil</h1>
+
+        <div class="info-row">
+            <span class="info-label">ID</span>
+            <span class="info-value" th:text="${userInfo.id}"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Nom d'utilisateur</span>
+            <span class="info-value" th:text="${userInfo.username}"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value" th:text="${userInfo.email}"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Rôles</span>
+            <div class="roles">
+                <span class="role-badge" th:each="role : ${userInfo.roles}" th:text="${role}"></span>
+            </div>
+        </div>
+
+        <form class="logout-form" th:action="@{/auth/logout}" method="post">
+            <button type="submit">Se déconnecter</button>
+        </form>
+    </div>
+    </body>
+</html>
