@@ -21,7 +21,12 @@ public class PaymentMethodController {
 
     private final PaymentMethodService paymentMethodService;
 
-    @GetMapping("/new")
+    @ModelAttribute
+    public void addActiveLink(Model model) {
+        model.addAttribute("activeLink", "payments");
+    }
+
+    @GetMapping
     @PreAuthorize("isAuthenticated()")
     public String showForm(@AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
         model.addAttribute("form", new PaymentMethodFormDTO());
@@ -29,7 +34,7 @@ public class PaymentMethodController {
         return "paymentMethod/form";
     }
 
-    @PostMapping("/new")
+    @PostMapping
     @PreAuthorize("isAuthenticated()")
     public String submitForm(@AuthenticationPrincipal UserDetailsImpl userDetails,
                              @ModelAttribute("form") PaymentMethodFormDTO form,
@@ -38,6 +43,6 @@ public class PaymentMethodController {
         paymentMethodService.create(userDetails.getId(), form.toDTO());
         redirectAttributes.addFlashAttribute("successMessage",
                 "Payment method " + form.getType() + " - " + form.getAccountId() + " created successfully.");
-        return "redirect:/payment-methods/new";
+        return "redirect:/payment-methods";
     }
 }

@@ -31,6 +31,8 @@ public class Transaction {
     @JoinColumn(name = "user_id", nullable = false)
     private User owner;
 
+    private String status = "SUCCESS";
+
     @Override
     public boolean equals(Object obj) {
         if(this == obj) return true;

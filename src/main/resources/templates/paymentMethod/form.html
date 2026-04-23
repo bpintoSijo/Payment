@@ -1,41 +1,44 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     <head>
         <meta charset="UTF-8">
         <title>New Payment Method</title>
-        <link rel="stylesheet" th:href="@{/css/transaction-form.css}" />
+        <link rel="stylesheet" th:href="@{/css/style.css}" />
     </head>
-    <body>
-    <div class="card">
-        <h1>New Payment Method</h1>
+    <body class="with-navbar">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+        <div class="page-content">
+            <div class="card">
+                <h1>New Payment Method</h1>
 
-        <div class="success-banner" th:if="${successMessage}">
-            <strong th:text="${successMessage}"></strong>
+                <div class="success-banner" th:if="${successMessage}">
+                    <strong th:text="${successMessage}"></strong>
+                </div>
+
+                <form th:action="@{/payment-methods}" th:object="${form}" method="post">
+                    <div class="field">
+                        <label for="type">Type</label>
+                        <select id="type" th:field="*{type}" required>
+                            <option value="">-- Select a type --</option>
+                            <option value="CARD">Credit Card</option>
+                            <option value="PAYPAL">PayPal</option>
+                            <option value="CRYPTO">Crypto</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="accountId">Account ID</label>
+                        <input type="text" id="accountId" th:field="*{accountId}" required />
+                    </div>
+
+                    <button type="submit">Add Payment Method</button>
+                </form>
+
+                <h2 th:if="${not #lists.isEmpty(paymentMethods)}">Existing Payment Methods</h2>
+                <ul th:if="${not #lists.isEmpty(paymentMethods)}">
+                    <li th:each="pm : ${paymentMethods}" th:text="${pm.type + ' - ' + pm.accountId}"></li>
+                </ul>
+            </div>
         </div>
-
-        <form th:action="@{/payment-methods/new}" th:object="${form}" method="post">
-            <div class="field">
-                <label for="type">Type</label>
-                <select id="type" th:field="*{type}" required>
-                    <option value="">-- Select a type --</option>
-                    <option value="CARD">Credit Card</option>
-                    <option value="PAYPAL">PayPal</option>
-                    <option value="CRYPTO">Crypto</option>
-                </select>
-            </div>
-
-            <div class="field">
-                <label for="accountId">Account ID</label>
-                <input type="text" id="accountId" th:field="*{accountId}" required />
-            </div>
-
-            <button type="submit">Add Payment Method</button>
-        </form>
-
-        <h2 th:if="${not #lists.isEmpty(paymentMethods)}">Existing Payment Methods</h2>
-        <ul th:if="${not #lists.isEmpty(paymentMethods)}">
-            <li th:each="pm : ${paymentMethods}" th:text="${pm.type + ' - ' + pm.accountId}"></li>
-        </ul>
-    </div>
     </body>
 </html>

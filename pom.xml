@@ -48,6 +48,10 @@
             <artifactId>spring-boot-starter-security</artifactId>
             <scope>compile</scope>
         </dependency>
+		<dependency>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-springsecurity6</artifactId>
+		</dependency>
 
         <!-- JWT -->
         <dependency>
