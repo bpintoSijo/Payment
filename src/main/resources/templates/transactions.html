@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8">
+        <title>Transactions</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}" />
+    </head>
+    <body class="with-navbar">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+        <div class="page-content">
+
+            <!-- Header -->
+            <div class="transaction-content">
+                <div class="page-header">
+                    <h1>Transactions</h1>
+                    <button class="btn-primary small" onclick="openModal()">
+                        + Nouvelle transaction
+                    </button>
+                </div>
+
+                <!-- Success banner -->
+                <div class="success-banner" th:if="${successPaymentMessage}">
+                    <strong th:text="${successPaymentMessage}"></strong>
+                </div>
+
+                <!-- Transactions list -->
+                <div class="card table-card">
+                    <table th:if="${not #lists.isEmpty(transactions)}">
+                        <thead>
+                        <tr>
+                            <!--th>Date</th-->
+                            <th>Montant</th>
+                            <th>Moyen de paiement</th>
+                            <th>Statut</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="tx : ${transactions}">
+                            <!--td th:text="${#temporals.format(tx.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</--td-->
+                            <td th:text="${tx.amount + ' €'}">0 €</td>
+                            <td th:text="${tx.payment.type + ' - ' + tx.payment.accountId}">Carte</td>
+                            <td>
+                                            <span class="badge"
+                                                  th:classappend="${tx.status == 'SUCCESS'} ? 'badge-success' : (${tx.status == 'PENDING'} ? 'badge-pending' : 'badge-error')"
+                                                  th:text="${tx.status}">
+                                            </span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="empty-state" th:if="${#lists.isEmpty(transactions)}">
+                        <p>Aucune transaction pour le moment.</p>
+                        <button class="btn-primary" onclick="openModal()">Créer ma première transaction</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Modal -->
+        <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+            <div class="modal" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2>Nouvelle transaction</h2>
+                    <button class="modal-close" onclick="closeModal()">✕</button>
+                </div>
+
+                <form th:action="@{/transactions}" th:object="${form}" method="post">
+                    <div class="field">
+                        <label for="amount">Montant</label>
+                        <input type="number" id="amount" th:field="*{amount}" step="0.01" min="0" required />
+                    </div>
+
+                    <div class="field">
+                        <label for="paymentMethodId">Moyen de paiement</label>
+                        <select id="paymentMethodId" th:field="*{paymentMethodId}" required>
+                            <option value="">-- Sélectionner --</option>
+                            <option th:each="pm : ${paymentMethods}"
+                                    th:value="${pm.id}"
+                                    th:text="${pm.type + ' - ' + pm.accountId}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <button type="submit">Payer</button>
+                </form>
+            </div>
+        </div>
+        <script>
+            function openModal() {
+                document.getElementById('modalOverlay').classList.add('active');
+            }
+            function closeModal() {
+                document.getElementById('modalOverlay').classList.remove('active');
+            }
+            const hasErrors = /*[[${#fields.hasErrors('${form.*}')}]]*/ false;
+            if (hasErrors) openModal();
+        </script>
+    </body>
+</html>

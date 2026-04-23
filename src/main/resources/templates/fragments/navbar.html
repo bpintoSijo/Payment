@@ -1,0 +1,35 @@
+<nav th:fragment="navbar" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <div class="nav-brand">
+        <a th:href="@{/}">Payments</a>
+    </div>
+
+    <div class="nav-links">
+        <a th:href="@{/}"
+           th:classappend="${activeLink == 'home'} ? 'active'">
+            Accueil
+        </a>
+        <a th:href="@{/transactions}"
+           th:classappend="${activeLink == 'transactions'} ? 'active'"
+           sec:authorize="isAuthenticated()">
+            Transactions
+        </a>
+        <a th:href="@{/payment-methods}"
+           th:classappend="${activeLink == 'payments'} ? 'active'"
+           sec:authorize="isAuthenticated()">
+            Moyen de paiement
+        </a>
+    </div>
+
+    <div class="nav-right">
+        <!-- Utilisateur NON connecté -->
+        <div sec:authorize="!isAuthenticated()">
+            <a th:href="@{/auth/login}">Se connecter</a>
+            <a th:href="@{/auth/signup}">S'inscrire</a>
+        </div>
+
+        <!-- Utilisateur connecté -->
+        <div sec:authorize="isAuthenticated()">
+            <a class="nav-username" th:href="@{/auth/profile}" sec:authentication="name"></a>
+        </div>
+    </div>
+</nav>

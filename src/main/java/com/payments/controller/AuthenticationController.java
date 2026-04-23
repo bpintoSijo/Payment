@@ -12,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -60,14 +59,10 @@ public class AuthenticationController {
                             loginRequest.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtUtils.generateJwtToken(authentication);
+            Cookie jwtCookie = jwtUtils.generateCookie(authentication);
 
-            Cookie jwtCookie = new Cookie("jwt", jwt);
-            jwtCookie.setHttpOnly(true);
-            jwtCookie.setPath("/");
             response.addCookie(jwtCookie);
-
-            return "redirect:/auth/signup";
+            return "redirect:/";
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Invalid username or password.");
@@ -114,13 +109,7 @@ public class AuthenticationController {
     @PreAuthorize("isAuthenticated()")
     public String logout(HttpServletResponse response) {
         SecurityContextHolder.clearContext();
-
-        Cookie jwtCookie = new Cookie("jwt", null);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(0);
-        response.addCookie(jwtCookie);
-
+        response.addCookie(jwtUtils.generateEmptyCookie());
         return "redirect:/auth/login";
     }
 

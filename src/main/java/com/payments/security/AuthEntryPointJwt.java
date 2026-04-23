@@ -17,21 +17,35 @@ import java.util.Map;
 @Slf4j
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
-        log.error("Error unauthorized : {}", authException.getMessage());
 
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        String uri = request.getRequestURI();
+        String accept = request.getHeader("Accept");
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-        body.put("error", "Unauthorized");
-        body.put("message", authException.getMessage());
-        body.put("path", request.getServletPath());
+        log.error("Unauthorized error: {} {}", authException.getMessage(), uri);
 
-        new ObjectMapper().writeValue(response.getOutputStream(), body);
+        // API case
+        if ((accept != null && accept.contains(MediaType.APPLICATION_JSON_VALUE))
+                || uri.startsWith("/api/")) {
+
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
+            body.put("error", "Unauthorized");
+            body.put("message", authException.getMessage());
+            body.put("path", request.getServletPath());
+
+            objectMapper.writeValue(response.getOutputStream(), body);
+
+        } else {
+            response.sendRedirect("/auth/login");
+        }
     }
 }

@@ -3,9 +3,11 @@ package com.payments.controller;
 import com.payments.domain.payment.AbstractPaymentMethod;
 import com.payments.dto.transaction.TransactionDTO;
 import com.payments.repository.PaymentMethodRepository;
+import com.payments.repository.TransactionRepository;
 import com.payments.security.UserDetailsImpl;
 import com.payments.service.PaymentProcessService;
 import com.payments.service.TransactionService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,29 +26,36 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class TransactionController {
 
     private final TransactionService transactionService;
+    private final TransactionRepository transactionRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final PaymentProcessService paymentProcessService;
 
-    @GetMapping("/new")
+    @ModelAttribute
+    public void addActiveLink(Model model) {
+        model.addAttribute("activeLink", "transactions");
+    }
+
+    @GetMapping
     @PreAuthorize("isAuthenticated()")
     public String showForm(@AuthenticationPrincipal UserDetailsImpl user, Model model) {
         model.addAttribute("form", new TransactionDTO());
         model.addAttribute("paymentMethods", paymentMethodRepository.findByOwnerId(user.getId()));
-        return "transaction/form";
+        model.addAttribute("transactions", transactionRepository.findByOwnerId(user.getId()));
+        return "transactions";
     }
 
-    @PostMapping("/new")
+    @PostMapping
     public String submitForm(
             @AuthenticationPrincipal UserDetailsImpl user,
             @ModelAttribute("form") TransactionDTO form,
             RedirectAttributes redirectAttributes
     ) {
-        AbstractPaymentMethod payment = transactionService.create(user.getId(), form.getAmount(), form.getPaymentMethodId()).getPayment();
+        AbstractPaymentMethod payment = paymentMethodRepository.findById(form.getPaymentMethodId()).orElseThrow(() -> new EntityNotFoundException("Could not find payment method."));
         paymentProcessService.startPaymentTransaction(payment.getAccountId(), payment.getId(), payment.getType(), form.getAmount());
         if(payment.pay(form.getAmount())) {
             String paymentMessage = "Paid " + form.getAmount() + " with " + payment.getType() + " - " + payment.getAccountId();
             redirectAttributes.addFlashAttribute("successPaymentMessage", paymentMessage);
         }
-        return "redirect:/transactions/new";
+        return "redirect:/transactions";
     }
 }

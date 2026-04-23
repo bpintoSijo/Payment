@@ -68,13 +68,12 @@ public class SecurityConfig {
 
             // Authorization rule
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("**/auth/login", "**/auth/signup", "/camunda/**").permitAll()
-                .requestMatchers(
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html"
-                ).permitAll()
+                .requestMatchers("/", "/auth/login", "/auth/signup").permitAll()
+                .requestMatchers("/camunda/**").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/h2-console/**").permitAll() // Dev only
+                .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             )
 

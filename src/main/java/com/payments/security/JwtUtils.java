@@ -6,6 +6,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -38,6 +39,31 @@ public class JwtUtils {
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
         return generateTokenFromUsername(userPrincipal.getUsername());
+    }
+
+    /**
+     * Generate a jwt cookie from authentication
+     * @param authentication Authentication used to generate jwt cookie
+     * @return Jwt cookie
+     * */
+    public Cookie generateCookie(Authentication authentication) {
+        String jwt = generateJwtToken(authentication);
+
+        Cookie jwtCookie = new Cookie(cookieName, jwt);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(jwtExpirationMs / 1000);
+
+        return jwtCookie;
+    }
+
+    public Cookie generateEmptyCookie() {
+        Cookie jwtCookie = new Cookie("jwt", null);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(0);
+
+        return jwtCookie;
     }
 
     /**
