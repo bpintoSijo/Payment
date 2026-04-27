@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -68,7 +69,7 @@ public class SecurityConfig {
 
             // Authorization rule
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/auth/login", "/auth/signup").permitAll()
+                .requestMatchers("/", "/auth/login", "/auth/signup", "/api/auth/login", "/api/auth/signup").permitAll()
                 .requestMatchers("/camunda/**").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
@@ -78,7 +79,7 @@ public class SecurityConfig {
             )
 
             // For H2 console
-            .headers(headers -> headers.frameOptions(fo -> fo.sameOrigin()))
+            .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
 
             .authenticationProvider(authenticationProvider())
 

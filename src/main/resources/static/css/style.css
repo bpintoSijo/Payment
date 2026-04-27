@@ -94,7 +94,7 @@ nav {
 }
 
 .nav-username {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     font-weight: 600;
 }
 
@@ -117,6 +117,25 @@ nav {
     background: #348A25;
 }
 
+.btn-signout {
+    font-size: 0.875rem !important;
+    font-weight: 600;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    padding: 3px 7px !important;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    width: auto !important;
+    margin-top: 0 !important;
+}
+
+.btn-signout:hover {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-color: #fca5a5;
+}
+
 body.with-navbar {
     display: block;
     align-items: unset;
@@ -124,10 +143,8 @@ body.with-navbar {
 }
 
 body.with-navbar .page-content {
-    min-height: calc(100vh - 60px);
     display: flex;
     justify-content: center;
-    align-items: center;
     padding: 2rem;
 }
 
@@ -139,6 +156,12 @@ body.with-navbar .page-content {
     padding: 2.5rem;
     width: 100%;
     max-width: 440px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
 }
 
 .success-banner {
@@ -251,6 +274,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
+    min-width: 700px;
 }
 
 thead tr {
@@ -280,6 +304,25 @@ tbody tr:last-child td {
 
 tbody tr:hover {
     background: #fafafa;
+}
+
+/* ===== PAGINATION =====*/
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.pagination a {
+    text-decoration: none;
+    color: #44B531;
+    font-weight: 600;
+}
+
+.pagination a:hover {
+    text-decoration: underline;
 }
 
 /* ===== BADGES ===== */
@@ -372,5 +415,7 @@ tbody tr:hover {
 
 /* ===== Transactions =====*/
 .transaction-content {
+    max-width: 860px;
     width: 100%;
+    margin: 0 auto;
 }

@@ -28,7 +28,7 @@
                     <table th:if="${not #lists.isEmpty(transactions)}">
                         <thead>
                         <tr>
-                            <!--th>Date</th-->
+                            <th>Date</th>
                             <th>Montant</th>
                             <th>Moyen de paiement</th>
                             <th>Statut</th>
@@ -36,7 +36,7 @@
                         </thead>
                         <tbody>
                         <tr th:each="tx : ${transactions}">
-                            <!--td th:text="${#temporals.format(tx.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</--td-->
+                            <td th:text="${#temporals.format(tx.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
                             <td th:text="${tx.amount + ' €'}">0 €</td>
                             <td th:text="${tx.payment.type + ' - ' + tx.payment.accountId}">Carte</td>
                             <td>
@@ -54,8 +54,21 @@
                         <button class="btn-primary" onclick="openModal()">Créer ma première transaction</button>
                     </div>
                 </div>
+                <div class="pagination" th:if="${not #lists.isEmpty(transactions)}">
+                    <a th:if="${transactionsPage.hasPrevious()}"
+                       th:href="@{/transactions(page=${transactionsPage.number - 1})}">
+                        ← Précédent
+                    </a>
+                    <span>
+                            Page <span th:text="${transactionsPage.number + 1}"></span>
+                            sur <span th:text="${transactionsPage.totalPages}"></span>
+                        </span>
+                    <a th:if="${transactionsPage.hasNext()}"
+                       th:href="@{/transactions(page=${transactionsPage.number + 1})}">
+                        Suivant →
+                    </a>
+                </div>
             </div>
-
         </div>
 
         <!-- Modal -->

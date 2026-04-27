@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PaymentMethodRepository extends JpaRepository<AbstractPaymentMethod, Long> {
@@ -14,4 +15,6 @@ public interface PaymentMethodRepository extends JpaRepository<AbstractPaymentMe
     List<AbstractPaymentMethod> findByPaymentMethodType(@Param("type") Class<? extends AbstractPaymentMethod> type);
 
     List<AbstractPaymentMethod> findByOwnerId(Long userId);
+
+    Optional<AbstractPaymentMethod> findByIdAndOwnerId(long id, Long userId);
 }
