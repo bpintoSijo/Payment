@@ -41,7 +41,7 @@ public class CheckFundsDelegate implements JavaDelegate {
         } else {
             Payment paymentMethod = optionalPaymentMethod.get();
             execution.setVariable("resolvedPaymentType", paymentMethod.getType());
-            fundsAvailable = paymentMethodService.hasSufficientFunds(paymentMethod, amount);
+            fundsAvailable = paymentMethodService.hasSufficientFunds();
 
             if (!fundsAvailable) {
                 log.warn("Insufficient funds - accountId={}, amount={}", accountId, amount);

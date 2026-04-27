@@ -69,7 +69,8 @@ class TransactionServiceTest {
 
     @Test
     void create_negativeAmount_throwsNegativeAmountException() {
-        assertThatThrownBy(() -> transactionService.create(1L, new BigDecimal("-10.00"), 1L))
+        BigDecimal minusTen = new BigDecimal("-10.00");
+        assertThatThrownBy(() -> transactionService.create(1L, minusTen, 1L))
                 .isInstanceOf(NegativeAmountException.class)
                 .hasMessageContaining("negative amount");
     }

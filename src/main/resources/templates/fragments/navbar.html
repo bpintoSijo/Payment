@@ -29,7 +29,7 @@
 
         <!-- Utilisateur connecté -->
         <div sec:authorize="isAuthenticated()" style="display:flex;align-items:center;gap:8px;">
-            <a class="nav-username" th:href="@{/auth/profile}" sec:authentication="name"></a>
+            <a class="nav-username" th:href="@{/auth/profile}" sec:authentication="name">username</a>
             <form th:action="@{/auth/logout}" method="post" style="margin:0;">
                 <button type="submit" class="btn-signout">Se déconnecter</button>
             </form>

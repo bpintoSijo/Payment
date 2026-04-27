@@ -71,18 +71,20 @@ public class PaymentMethodSteps {
         assertThat(scenarioContext.getLastResult().getResponse().getStatus()).isEqualTo(expectedStatus);
     }
 
+    @SuppressWarnings("unchecked")
     @Then("the payment method type should be {string}")
     public void thePaymentMethodTypeShouldBe(String expectedType) throws Exception {
         String body = scenarioContext.getLastResult().getResponse().getContentAsString();
-        Map<?, ?> response = objectMapper.readValue(body, Map.class);
-        assertThat(response.get("type")).isEqualTo(expectedType);
+        Map<String, String> response = objectMapper.readValue(body, Map.class);
+        assertThat(response).containsEntry("type", expectedType);
     }
 
+    @SuppressWarnings("unchecked")
     @Then("the payment method account should be {string}")
     public void thePaymentMethodAccountShouldBe(String expectedAccount) throws Exception {
         String body = scenarioContext.getLastResult().getResponse().getContentAsString();
-        Map<?, ?> response = objectMapper.readValue(body, Map.class);
-        assertThat(response.get("accountId")).isEqualTo(expectedAccount);
+        Map<String, String> response = objectMapper.readValue(body, Map.class);
+        assertThat(response).containsEntry("accountId", expectedAccount);
     }
 
     @Then("the response should be a JSON array")

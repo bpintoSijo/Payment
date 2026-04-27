@@ -4,15 +4,12 @@ import com.payments.domain.payment.AbstractPaymentMethod;
 import com.payments.domain.transaction.Transaction;
 import com.payments.dto.transaction.TransactionDTO;
 import com.payments.repository.PaymentMethodRepository;
-import com.payments.repository.TransactionRepository;
 import com.payments.security.UserDetailsImpl;
 import com.payments.service.PaymentProcessService;
 import com.payments.service.TransactionService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -27,13 +24,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class TransactionController {
 
     private final TransactionService transactionService;
-    private final TransactionRepository transactionRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final PaymentProcessService paymentProcessService;
 
+    private static final String TRANSACTION_ATTRIBUTE = "transactions";
+
     @ModelAttribute
     public void addActiveLink(Model model) {
-        model.addAttribute("activeLink", "transactions");
+        model.addAttribute("activeLink", TRANSACTION_ATTRIBUTE);
     }
 
     @GetMapping
@@ -51,9 +49,9 @@ public class TransactionController {
                 transactionService.getPageFromUserSortByCreationDate(page, size, user.getId());
 
         model.addAttribute("transactionsPage", transactionsPage);
-        model.addAttribute("transactions", transactionsPage.getContent());
+        model.addAttribute(TRANSACTION_ATTRIBUTE, transactionsPage.getContent());
 
-        return "transactions";
+        return "transactions-page";
     }
 
     @PostMapping
@@ -68,6 +66,6 @@ public class TransactionController {
             String paymentMessage = "Paid " + form.getAmount() + " with " + payment.getType() + " - " + payment.getAccountId();
             redirectAttributes.addFlashAttribute("successPaymentMessage", paymentMessage);
         }
-        return "redirect:/transactions";
+        return "redirect:/transactions-page";
     }
 }

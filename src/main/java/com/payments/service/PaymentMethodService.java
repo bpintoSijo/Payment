@@ -2,7 +2,6 @@ package com.payments.service;
 
 import com.payments.domain.User;
 import com.payments.domain.payment.AbstractPaymentMethod;
-import com.payments.domain.payment.Payment;
 import com.payments.dto.payment.PaymentMethodDTO;
 import com.payments.repository.PaymentMethodRepository;
 import com.payments.repository.UserRepository;
@@ -38,7 +37,7 @@ public class PaymentMethodService {
         return paymentMethodRepository.findById(id);
     }
 
-    public boolean hasSufficientFunds(Payment paymentMethod, BigDecimal amount) {
+    public boolean hasSufficientFunds() {
         // TODO fund management
         return true;
     }

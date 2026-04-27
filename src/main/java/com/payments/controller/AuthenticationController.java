@@ -29,6 +29,8 @@ public class AuthenticationController {
     private final JwtUtils jwtUtils;
     private final UserService userService;
 
+    private static final String LOGIN_REDIRECT = "redirect:/auth/login";
+
     /**
      * GET /auth/login
      */
@@ -66,7 +68,7 @@ public class AuthenticationController {
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Invalid username or password.");
-            return "redirect:/auth/login";
+            return LOGIN_REDIRECT;
         }
     }
 
@@ -95,7 +97,7 @@ public class AuthenticationController {
         try {
             userService.register(signupRequest);
             redirectAttributes.addFlashAttribute("success", "Account created. Please log in.");
-            return "redirect:/auth/login";
+            return LOGIN_REDIRECT;
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/auth/signup";
@@ -110,7 +112,7 @@ public class AuthenticationController {
     public String logout(HttpServletResponse response) {
         SecurityContextHolder.clearContext();
         response.addCookie(jwtUtils.generateEmptyCookie());
-        return "redirect:/auth/login";
+        return LOGIN_REDIRECT;
     }
 
     /**

@@ -36,7 +36,7 @@ class TransactionDTOTest {
         TransactionDTO dto = TransactionDTO.fromEntity(transaction);
 
         assertThat(dto).isInstanceOf(TransactionDTO.class);
-        assertThat(dto.getId()).isEqualTo(0L);
+        assertThat(dto.getId()).isZero();
         assertThat(dto.getAmount()).isEqualTo(BigDecimal.TEN);
         assertThat(dto.getPaymentMethodId()).isEqualTo(1L);
     }
@@ -85,7 +85,7 @@ class TransactionDTOTest {
     void hashCode_sameFields_returnsSameHash() {
         TransactionDTO a = buildDTO(1L, BigDecimal.TEN, 2L);
         TransactionDTO b = buildDTO(1L, BigDecimal.TEN, 2L);
-        assertThat(a.hashCode()).isEqualTo(b.hashCode());
+        assertThat(a.hashCode()).hasSameHashCodeAs(b.hashCode());
     }
 
     @Test

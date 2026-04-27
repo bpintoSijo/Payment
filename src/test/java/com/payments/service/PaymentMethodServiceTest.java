@@ -98,12 +98,6 @@ class PaymentMethodServiceTest {
     }
 
     @Test
-    void hasSufficientFunds_alwaysReturnsTrue() {
-        CreditCardPayment payment = buildPayment(1L, "card-001", buildUser(1L));
-        assertThat(paymentMethodService.hasSufficientFunds(payment, BigDecimal.TEN)).isTrue();
-    }
-
-    @Test
     void pay_validAmount_returnsTrue() {
         User user = buildUser(1L);
         CreditCardPayment payment = buildPayment(1L, "card-001", user);

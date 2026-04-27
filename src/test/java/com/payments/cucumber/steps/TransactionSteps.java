@@ -58,6 +58,6 @@ public class TransactionSteps {
         String body = scenarioContext.getLastResult().getResponse().getContentAsString();
         Map<?, ?> response = objectMapper.readValue(body, Map.class);
         BigDecimal actual = new BigDecimal(response.get("amount").toString());
-        assertThat(actual.compareTo(BigDecimal.valueOf(expectedAmount))).isZero();
+        assertThat(actual).isEqualByComparingTo(BigDecimal.valueOf(expectedAmount));
     }
 }
